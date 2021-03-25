@@ -10,8 +10,8 @@ let cache = []
 
 module.exports = {
     init: async function(){
-        const model_url = process.env.NSFW_MODEL_URL;
-        const shape_size =  process.env.NSFW_MODEL_SHAPE_SIZE ;
+        const model_url = process.env.NSFW_MODEL_URL | "https://ml.files-sashido.cloud/models/nsfw_mobilenet_v2/93/";
+        const shape_size =  process.env.NSFW_MODEL_SHAPE_SIZE | "224";
 
         // Load the model in the memory only once!
         if (!model) {
