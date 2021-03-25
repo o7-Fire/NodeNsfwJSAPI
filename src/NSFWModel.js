@@ -65,6 +65,4 @@ module.exports = {
 }
 
 
-// Load the model on the first require
-
 
