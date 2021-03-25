@@ -6,7 +6,7 @@ const nsfw = require( "nsfwjs");
 tf.enableProdMode(); // enable on production
 
 let model
-
+let cache = []
 
 module.exports = {
     init: async function(){
@@ -32,7 +32,8 @@ module.exports = {
     classify: async function (url) {
         let pic;
         let result = {};
-
+        if(cache[url])
+            return cache[url]
 
         try {
             pic = await axios.get(url, {
@@ -51,7 +52,7 @@ module.exports = {
             const predictions = await model.classify(image);
 
             image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
-
+            cache[url] = predictions
             result = predictions;
         } catch (err) {
             console.error("Prediction Error: ", err);
