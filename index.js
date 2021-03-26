@@ -35,7 +35,9 @@ async function classify(url, req, res) {
         console.log(err);
     }
 }
-
+app.get("/api/json/graphical", (req, res) => {
+    res.json(nsfwModel.list)
+})
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "");
     if (!url) return

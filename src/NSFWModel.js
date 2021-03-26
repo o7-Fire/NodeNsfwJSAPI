@@ -6,6 +6,10 @@ const jpeg = require("jpeg-js");
 tf.enableProdMode(); // enable on production
 
 let model;
+let currentModel = {
+    url : "Default",
+    size : "Default"
+}
 //Using n1 do 1 - (n1 - n2)
 const report = {
     Drawing: {
@@ -71,11 +75,10 @@ function assignReport(t1, t2, reportPrediction) {
     return reportPrediction
 }
 module.exports = {
+    list: report,
     init: async function() {
-        const model_url =
-            process.env.NSFW_MODEL_URL |
-            "https://ml.files-sashido.cloud/models/nsfw_mobilenet_v2/93/";
-        const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE | "224";
+        const model_url = process.env.NSFW_MODEL_URL;
+        const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
         // Load the model in the memory only once!
         if (!model) {
@@ -84,6 +87,8 @@ module.exports = {
                 if (!model_url || !shape_size) model = await nsfw.load();
                 else {
                     model = await nsfw.load(model_url, { size: parseInt(shape_size) });
+                    currentModel.size = shape_size
+                    currentModel.url = model_url
                     console.info("Loaded: " + model_url + ":" + shape_size);
                 }
                 console.info("The NSFW Model was loaded successfully!");
@@ -153,6 +158,9 @@ module.exports = {
 
                    */
             reportPrediction["Goodluck Figuring out this data"] = 0;
+            //reportPrediction["ModelURL "+  currentModel.name] = 0
+            //reportPrediction["ModelSize "+  currentModel.size] = 0
+            reportPrediction.model = currentModel
             result = reportPrediction;
         } catch (err) {
             console.error("Prediction Error: ", err);
