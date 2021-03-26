@@ -19,12 +19,16 @@ app.get("/", (request, response) => {
 });
 let cache = []
 let discordVideo = [".gif", ".mp4"]
+hashCode = s => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)
+
+
 async function classify(url, req, res) {
+    const hash = hashCode(url)
     try {
-        if (!cache[url]) {
-            cache[url] = await nsfwModel.classify(url)
+        if (!cache[hash]) {
+            cache[hash] = await nsfwModel.classify(url)
         }
-        res.json(cache[url])
+        res.json(cache[hash])
     } catch (err) {
         res.status(500)
         res.send("wtf")
