@@ -7,6 +7,7 @@ const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
+
 nsfwModel.init()
 // make all the files in 'public' available
 app.use(express.static("public"));
@@ -17,13 +18,10 @@ app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
 let cache = []
-app.get("/api/json/graphical/classification/*", (async (req, res) => {
-    let url = req.url.replace("/api/json/graphical/classification/", "")
-    console.log(req.url + ":" + url)
-    if(!url)return
-
+let discordVideo = [".gif", ".mp4"]
+async function classify(url, req, res) {
     try {
-        if(!cache[url]) {
+        if (!cache[url]) {
             cache[url] = await nsfwModel.classify(url)
         }
         res.json(cache[url])
@@ -32,7 +30,28 @@ app.get("/api/json/graphical/classification/*", (async (req, res) => {
         res.send("wtf")
         console.log(err)
     }
+}
+
+app.get("/api/json/graphical/classification/discord/*", (async (req, res) => {
+    let url = req.url.replace("/api/json/graphical/classification/discord/", "")
+    console.log(req.url + ":" + url)
+    if(!url)return
+    for (const ext in discordVideo) {
+        if(url.endsWith(ext)){
+            url = url + "?format=png"
+            break
+        }
+    }
+    await classify(url, req, res)
 }))
+
+app.get("/api/json/graphical/classification/*", (async (req, res) => {
+    let url = req.url.replace("/api/json/graphical/classification/", "")
+    console.log(req.url + ":" + url)
+    if(!url)return
+    await classify(url, req, res)
+}))
+
 
 
 
