@@ -122,7 +122,7 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 .env
-test.js
+./test.js
 # Optional npm cache directory
 .npm
 
