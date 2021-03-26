@@ -12,7 +12,7 @@ nsfwModel.init();
 // make all the files in 'public' available
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({extended: true})); // for parsing application/x-www-form-urlencoded
 
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
@@ -38,25 +38,34 @@ async function classify(url, req, res) {
 
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "");
-    if (!url) return;
+    if (!url) return
+    let body = {}
     let allowed = true;
-    for (const discordVideoKey in discordVideo) {
-        if (url.endsWith(discordVideo[discordVideoKey])) {
-            allowed = false;
-            if (url.startsWith("https://cdn.discordapp.com/")) {
-                url = url + "?format=png";
-                url = url.replace(
-                    "https://cdn.discordapp.com/",
-                    "https://media.discordapp.net/"
-                );
-                allowed = true;
-                break;
+    body.error = "Not allowed"
+    res.status(405);
+    if (!url.startsWith("https://cdn.discordapp.com/")) {
+        res.status(415);
+        body.error = "Only allow https://cdn.discordapp.com/"
+        res.json(body);
+        allowed = false;
+    }
+    if (allowed)
+        for (const discordVideoKey in discordVideo) {
+            if (url.endsWith(discordVideo[discordVideoKey])) {
+                allowed = false;
+                if (url.startsWith("https://cdn.discordapp.com/")) {
+                    url = url + "?format=png";
+                    url = url.replace(
+                        "https://cdn.discordapp.com/",
+                        "https://media.discordapp.net/"
+                    );
+                    allowed = true;
+                    break;
+                }
             }
         }
-    }
     if (!allowed) {
-        res.status(500);
-        res.send('{"error":"Model is not loaded yet!"}');
+        res.json(body);
         return;
     }
     await classify(url, req, res);
@@ -64,7 +73,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
 
 app.post("/api/*", (request, response) => {
     console.dir(request.body);
-    response.writeHead(200, { "Content-Type": "text/html" });
+    response.writeHead(200, {"Content-Type": "text/html"});
     response.end("404");
 });
 // listen for requests :)
