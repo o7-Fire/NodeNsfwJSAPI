@@ -25,7 +25,7 @@ const report = {
     },
     Porn: {
         Sexy: "PornSeductive",
-        Hentai:  "HentaiClips" ,
+        Hentai:  {n1: "HentaiClips"},
         Neutral: "SoftPorn"
     },
     Hentai: {
