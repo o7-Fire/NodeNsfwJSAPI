@@ -16,14 +16,17 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-
+let cache = []
 app.get("/api/json/graphical/classification/*", (async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "")
     console.log(req.url + ":" + url)
     if(!url)return
+
     try {
-        let result = await nsfwModel.classify(url)
-        res.json(result)
+        if(!cache[url]) {
+            cache[url] = await nsfwModel.classify(url)
+        }
+        res.json(cache[url])
     } catch (err) {
         res.status(500)
         res.send("wtf")
