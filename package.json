@@ -10,11 +10,11 @@
     "start": "node index.js"
   },
   "dependencies": {
-    "@tensorflow/tfjs-node": "1.7.4",
-    "axios": "0.19.2",
+    "@tensorflow/tfjs-node": "^3.3.0",
+    "axios": "^0.21.1",
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
-    "nsfwjs": "2.2.0",
+    "nsfwjs": "^2.3.0",
     "string-hash-64": "^1.0.3"
   },
   "engines": {
