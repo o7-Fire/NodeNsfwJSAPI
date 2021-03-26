@@ -8,7 +8,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-nsfwModel.init()
+nsfwModel.init();
 // make all the files in 'public' available
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
@@ -17,47 +17,50 @@ app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-let cache = []
-let discordVideo = [".gif", ".mp4"]
-hashCode = s => s.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0)
-
+let cache = [];
+let discordVideo = [".gif", ".mp4", ".webm"];
 
 async function classify(url, req, res) {
-    const hash = hashCode(url)
+    console.log(req.url + ":" + url);
+    const hash = url;
+
     try {
         if (!cache[hash]) {
-            cache[hash] = await nsfwModel.classify(url)
+            cache[hash] = await nsfwModel.classify(url);
         }
-        res.json(cache[hash])
+        res.json(cache[hash]);
     } catch (err) {
-        res.status(500)
-        res.send("wtf")
-        console.log(err)
+        res.status(500);
+        res.send("wtf");
+        console.log(err);
     }
 }
 
-app.get("/api/json/graphical/classification/discord/*", (async (req, res) => {
-    let url = req.url.replace("/api/json/graphical/classification/discord/", "")
-    console.log(req.url + ":" + url)
-    if(!url)return
-    for (const ext in discordVideo) {
-        if(url.endsWith(ext)){
-            url = url + "?format=png"
-            break
+app.get("/api/json/graphical/classification/*", async (req, res) => {
+    let url = req.url.replace("/api/json/graphical/classification/", "");
+    if (!url) return;
+    let allowed = true;
+    for (const discordVideoKey in discordVideo) {
+        if (url.endsWith(discordVideo[discordVideoKey])) {
+            allowed = false;
+            if (url.startsWith("https://cdn.discordapp.com/")) {
+                url = url + "?format=png";
+                url = url.replace(
+                    "https://cdn.discordapp.com/",
+                    "https://media.discordapp.net/"
+                );
+                allowed = true;
+                break;
+            }
         }
     }
-    await classify(url, req, res)
-}))
-
-app.get("/api/json/graphical/classification/*", (async (req, res) => {
-    let url = req.url.replace("/api/json/graphical/classification/", "")
-    console.log(req.url + ":" + url)
-    if(!url)return
-    await classify(url, req, res)
-}))
-
-
-
+    if (!allowed) {
+        res.status(500);
+        res.send('{"error":"Model is not loaded yet!"}');
+        return;
+    }
+    await classify(url, req, res);
+});
 
 app.post("/api/*", (request, response) => {
     console.dir(request.body);
