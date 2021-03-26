@@ -34,8 +34,8 @@ const report = {
     },
     Hentai: {
         Porn: "Doujin",
-        Drawing:  "R34"
-    }
+        Drawing: {n1: "R34"}
+    }//try n1 or not
 }; //Combining thing make new thing
 const convert = async img => {
     // Decoded image in UInt8 Byte array
