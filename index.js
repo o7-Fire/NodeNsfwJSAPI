@@ -9,6 +9,9 @@ const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
 nsfwModel.init();
+app.head("/", (request, response) => {
+  response.status(200);
+});
 // make all the files in 'public' available
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
