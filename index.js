@@ -8,7 +8,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-nsfwModel.init();
+nsfwModel.init().then(() => {
+  cache = [];
+});
 app.head("/", (request, response) => {
   response.status(200);
 });
