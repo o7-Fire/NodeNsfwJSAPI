@@ -18,6 +18,7 @@ app.head("/", (request, response) => {
 app.use(express.static("public"));
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
+/* overcautious user only
 app.use(function(req, res, next) {
   if (!req.headers.authorization && process.env.SECRET) {
     console.log("no auth");
@@ -29,6 +30,7 @@ app.use(function(req, res, next) {
     next();
   }
 });
+*/
 app.get("/", (request, response) => {
   response.sendFile(__dirname + "/views/index.html");
 });
