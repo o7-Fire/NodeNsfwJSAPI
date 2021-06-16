@@ -51,12 +51,27 @@ async function classify(url, req, res) {
   }
 }
 app.get("/api/json/test", (req, res) => {
-  res.send(req.body);
+  res.json(req.headers);
 });
 app.get("/api/json/graphical", (req, res) => {
+  if (!req.headers.authorization && process.env.SECRET) {
+    console.log("no auth: " + req.url);
+    return res.status(403).json({ error: "No credentials sent!" });
+  } else if (req.headers.authorization !== process.env.SECRET) {
+    console.log("invalid auth: " + req.url);
+    return res.status(403).json({ error: "No credentials sent!!" });
+  }
   res.json(nsfwModel.list);
 });
 app.get("/api/json/graphical/classification/*", async (req, res) => {
+  if (!req.headers.authorization && process.env.SECRET) {
+    console.log("no auth: " + req.url);
+    return res.status(403).json({ error: "No credentials sent!" });
+  } else if (req.headers.authorization !== process.env.SECRET) {
+    console.log("invalid auth: " + req.url);
+    return res.status(403).json({ error: "No credentials sent!!" });
+  }
+
   let url = req.url.replace("/api/json/graphical/classification/", "");
   if (!url) return;
   let body = {};
@@ -65,12 +80,10 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
   status = 405;
 
   if (!url.startsWith("https://cdn.discordapp.com/")) {
-    if (
-      !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg"))
-    ) {
-      res.status(415);
+    if (url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg")) {
+    } else {
+      status = 415;
       body.error = "Only allow https://cdn.discordapp.com/ or picture";
-      res.json(body);
       allowed = false;
     }
   } else {
@@ -83,33 +96,4 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             "https://cdn.discordapp.com/",
             "https://media.discordapp.net/"
           );
-          allowed = true;
-          break;
-        }
-      }
-    }
-  }
-
-  if (!allowed) {
-    res.status(status).json(body);
-    return;
-  }
-  await classify(url, req, res);
-});
-
-app.get("*", function(req, res) {
-  res.status(404);
-
-  // respond with json
-  if (req.accepts("json")) {
-    res.json({ error: "Not found" });
-    return;
-  }
-
-  // default to plain-text. send()
-  res.type("txt").send("Not found");
-});
-// listen for requests :)
-const listener = app.listen(process.env.PORT || 5656, () => {
-  console.log("Your app is listening on port " + listener.address().port);
-});
+          allowed = true
