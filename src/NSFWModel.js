@@ -163,7 +163,7 @@ module.exports = {
       result = reportPrediction;
     } catch (err) {
       console.error("Prediction Error: ", err);
-      result.error = "Model is not loaded yet!";
+      result.error = err.toString();
       return result;
     }
 
