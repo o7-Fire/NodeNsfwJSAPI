@@ -1,1 +1,1 @@
-require("index.js");
+const assad = require("./index.js");
