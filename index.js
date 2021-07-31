@@ -52,7 +52,7 @@ app.get("/api/json/test", (req, res) => {
   res.send(req.body);
 });
 app.get("/api/json/graphical", (req, res) => {
-  res.json(nsfwModel.list);
+  res.json(nsfwModel.report);
 });
 app.get("/api/json/graphical/classification/*", async (req, res) => {
   let url = req.url.replace("/api/json/graphical/classification/", "");
