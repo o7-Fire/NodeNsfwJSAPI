@@ -72,10 +72,10 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     body.error = "Not allowed";
     status = 405;
     if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
-        for (const discordVideoKey in discordVideo) {
-            if (url.endsWith(discordVideo[discordVideoKey])) {
+        for (const ext of discordVideo) {
+            if (url.endsWith(ext)) {
                 allowed = false;
-                if (url.startsWith("https://cdn.discordapp.com/")) {
+                if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
                     url = url + "?format=png";
                     url = url.replace(
                         "https://cdn.discordapp.com/",
