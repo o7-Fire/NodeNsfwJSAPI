@@ -35,7 +35,7 @@ async function test2() {
         console.log("```js");
         console.log(data);
         console.log("```");
-        JSON.parse(data);
+        console.log(data.model);
         test3();
     } catch (error) {
         console.error(error);
@@ -50,7 +50,7 @@ async function test1() {
         console.log("```js");
         console.log(data);
         console.log("```");
-        JSON.parse(data);
+        console.log(data.model);
         test2();
     } catch (error) {
         console.error(error);
