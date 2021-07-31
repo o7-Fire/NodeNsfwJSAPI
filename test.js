@@ -3,7 +3,7 @@ const https = require('https')
 
 async function test1(){
   const options = {
-  hostname: 'localhost',
+  hostname: 'http://localhost',
   port: 5656,
   path: '/api/json/graphical/classification/https://media.discordapp.net/attachments/840041811384860709/870629782772150322/TraptrixArchetype.png',
   method: 'GET'
