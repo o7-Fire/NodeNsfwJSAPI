@@ -8,7 +8,9 @@ const app = express();
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-
+nsfwModel.init().then(() => {
+  cache = [];
+});
 app.head("/", (request, response) => {
   response.status(200);
 });
@@ -107,9 +109,7 @@ app.get("*", function(req, res) {
   // default to plain-text. send()
   res.type("txt").send("Not found");
 });
-nsfwModel.init().then(() => {
-  cache = [];
-  app.listen(process.env.PORT || 5656, () => {
+// listen for requests :)
+const listener = app.listen(process.env.PORT || 5656, () => {
   console.log("Your app is listening on port " + listener.address().port);
-});
 });
