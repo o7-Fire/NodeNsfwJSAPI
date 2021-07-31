@@ -17,7 +17,9 @@ async function test3() {
         console.log("test 3");
         const response = await axios.get('http://localhost:5656/api/json/graphical');
         const data = response.data;
+        console.log("```js");
         console.log(data);
+        console.log("```");
         JSON.parse(data);
         test4();
     } catch (error) {
@@ -30,7 +32,9 @@ async function test2() {
         console.log("test 2");
         const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png');
         const data = response.data;
+        console.log("```js");
         console.log(data);
+        console.log("```");
         JSON.parse(data);
         test3();
     } catch (error) {
@@ -43,7 +47,9 @@ async function test1() {
         console.log("test 1");
         const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://media.discordapp.net/attachments/840041811384860709/870629782772150322/TraptrixArchetype.png');
         const data = response.data;
+        console.log("```js");
         console.log(data);
+        console.log("```");
         JSON.parse(data);
         test2();
     } catch (error) {
