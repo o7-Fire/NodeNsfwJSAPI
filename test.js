@@ -63,7 +63,7 @@ async function test1() {
 
 async function prep(){
     await nsfwModel.init();
-    require("./index.js");
+    const assad = require("./index.js");
     test1();
 }
 
