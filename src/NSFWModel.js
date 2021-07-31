@@ -99,7 +99,7 @@ module.exports = {
   classify: async function(url) {
     let pic;
     let result = {};
-
+    await init();
     try {
       pic = await axios.get(url, {
         responseType: "arraybuffer"
