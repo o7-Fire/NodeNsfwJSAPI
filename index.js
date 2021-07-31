@@ -8,9 +8,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-nsfwModel.init().then(() => {
-  cache = [];
-});
+
 app.head("/", (request, response) => {
   response.status(200);
 });
@@ -63,7 +61,9 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
   let allowed = true;
   body.error = "Not allowed";
   status = 405;
-
+  if(!nsfwModel.model){
+   await nsfwModel.init();
+  }
   if (!url.startsWith("https://cdn.discordapp.com/")) {
     if (
       !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg"))
