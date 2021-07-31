@@ -1,3 +1,4 @@
+const nsfwModel = require("./src/NSFWModel");
 const assad = require("./index.js");
 const axios = require('axios');
 
@@ -61,4 +62,8 @@ async function test1() {
     }
 }
 
-test1();
+async function prep(){
+    await nsfwModel.init();
+}
+
+prep();
