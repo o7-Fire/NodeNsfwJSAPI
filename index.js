@@ -57,7 +57,9 @@ async function classify(url, req, res) {
     }
 }
 app.get("/api/json/test", (req, res) => {
-    res.send(req.body);
+    s = {}
+    s.yes = "yes";
+    res.json(s);
 });
 app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);
