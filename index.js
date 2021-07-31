@@ -61,8 +61,8 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
   let allowed = true;
   body.error = "Not allowed";
   status = 405;
-  if(!nsfwModel.model){
-    console.log("loading model");
+  if(nsfwModel.model === undefined){
+    console.log("Loading model");
    await nsfwModel.init();
   }
   if (!url.startsWith("https://cdn.discordapp.com/")) {
