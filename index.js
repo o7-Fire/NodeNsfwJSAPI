@@ -6,14 +6,9 @@
 const express = require("express");
 const app = express();
 const fs = require('fs');
-const https = require('https');
-const http = require('http');
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-var privateKey = fs.readFileSync('./private.key');
-var certificate = fs.readFileSync('./certificate.crt');
-var chain =  fs.readFileSync('./ca_bundle.crt');
 
 nsfwModel.init().then(() => {
     cache = [];
@@ -132,6 +127,6 @@ app.get("*", function(req, res) {
 });
 // listen for requests :)
 
-const listener = https.createServer({key: privateKey,cert: certificate},app.listen(process.env.PORT || 5656, () => {
+const listener = app.listen(process.env.PORT || 5656, () => {
     console.log("Your app is listening on port " + listener.address().port);
 }));
