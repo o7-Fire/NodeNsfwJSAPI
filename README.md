@@ -5,6 +5,9 @@
 Adopted from:
 https://github.com/SashiDo/content-moderation-image-api, https://github.com/infinitered/nsfwjs
 
+Preview: 
+https://api.o7fire.ml/
+
 ### TODO
 - Process external gif
 - Use preview gif for slow machine
