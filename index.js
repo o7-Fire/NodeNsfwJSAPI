@@ -8,9 +8,11 @@ const app = express();
 const fs = require('fs');
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
-const privateKey = fs.readFileSync('private.key');
-const certificate = fs.readFileSync('certificate.crt');
-const chain =  fs.readFileSync('ca_bundle.crt');
+
+var privateKey = fs.readFileSync('private.key');
+var certificate = fs.readFileSync('certificate.crt');
+var chain =  fs.readFileSync('ca_bundle.crt');
+
 nsfwModel.init().then(() => {
     cache = [];
 });
@@ -127,8 +129,6 @@ app.get("*", function(req, res) {
     res.type("txt").send("Not found");
 });
 // listen for requests :)
-var privateKey = fs.readFileSync( 'privatekey.pem' );
-var certificate = fs.readFileSync( 'certificate.pem' );
 
 const listener = https.createServer({key: privateKey,cert: certificate},app.listen(process.env.PORT || 5656, () => {
     console.log("Your app is listening on port " + listener.address().port);
