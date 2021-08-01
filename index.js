@@ -6,6 +6,8 @@
 const express = require("express");
 const app = express();
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
