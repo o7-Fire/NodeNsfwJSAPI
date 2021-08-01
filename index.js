@@ -9,9 +9,9 @@ const fs = require('fs');
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
 
-var privateKey = fs.readFileSync('private.key');
-var certificate = fs.readFileSync('certificate.crt');
-var chain =  fs.readFileSync('ca_bundle.crt');
+var privateKey = fs.readFileSync('./private.key');
+var certificate = fs.readFileSync('./certificate.crt');
+var chain =  fs.readFileSync('./ca_bundle.crt');
 
 nsfwModel.init().then(() => {
     cache = [];
