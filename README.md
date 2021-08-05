@@ -13,6 +13,11 @@
 - imgur, giphy, etc
 
 
+### Preview
+- Not 100% perfect
+- ![](https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png)
+- ![](https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png)
+
 ### Misc
 
 Adopted from:
