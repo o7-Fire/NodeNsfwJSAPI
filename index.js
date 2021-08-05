@@ -8,7 +8,10 @@ const app = express();
 const fs = require('fs');
 const bodyParser = require("body-parser");
 const nsfwModel = require("./src/NSFWModel");
-
+const http = require('http');
+const https = require('https');
+const httpPort = 5656;
+const httpsPort = 5657;
 
 nsfwModel.init().then(() => {
     cache = [];
@@ -126,7 +129,27 @@ app.get("*", function(req, res) {
     res.type("txt").send("Not found");
 });
 // listen for requests :)
-
+/*fuck you unlisten listener
 const listener = app.listen(process.env.PORT || 5656, () => {
     console.log("Your app is listening on port " + listener.address().port);
 });
+*/
+const httpServer = http.createServer(app);
+httpServer.listen(process.env.PORT_HTTP || httpPort, () => {
+    console.log("Http server listing on port : " + httpPort)
+});
+try {
+    const key = fs.readFileSync(__dirname + '/certsFiles/selfsigned.key');
+    const cert = fs.readFileSync(__dirname + '/certsFiles/selfsigned.crt');
+    const credentials = {
+        key: key,
+        cert: cert
+    };
+    const httpsServer = https.createServer(credentials, app);
+    httpsServer.listen(process.env.PORT_HTTPS || httpsPort, () => {
+        console.log("Https server listing on port : " + httpsPort)
+    });
+} catch (e) {
+    console.log("Can't start Https server");
+    console.log(e);
+}
