@@ -75,6 +75,7 @@ function assignReport(t1, t2, reportPrediction) {
   return reportPrediction;
 }
 module.exports = {
+  report: report,
   init: async function() {
     const model_url = process.env.NSFW_MODEL_URL;
     const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
