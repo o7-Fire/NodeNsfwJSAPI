@@ -132,6 +132,7 @@ module.exports = {
         let c1 = prediction[predictionKey1].className;
         reportPrediction[c1] = prediction[predictionKey1].probability;
       }
+      //enable if you want shitshow
       /*
                   for (const predictionKey1 in prediction) {
                       let c1 = prediction[predictionKey1].className;
