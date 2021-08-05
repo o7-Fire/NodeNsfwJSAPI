@@ -138,18 +138,19 @@ const httpServer = http.createServer(app);
 httpServer.listen(process.env.PORT_HTTP || httpPort, () => {
     console.log("Http server listing on port : " + httpPort)
 });
-try {
-    const key = fs.readFileSync(__dirname + '/certsFiles/selfsigned.key');
-    const cert = fs.readFileSync(__dirname + '/certsFiles/selfsigned.crt');
-    const credentials = {
-        key: key,
-        cert: cert
-    };
-    const httpsServer = https.createServer(credentials, app);
-    httpsServer.listen(process.env.PORT_HTTPS || httpsPort, () => {
-        console.log("Https server listing on port : " + httpsPort)
-    });
-} catch (e) {
-    console.log("Can't start Https server");
-    console.log(e);
+if (fs.existsSync(__dirname + '/certsFiles/ca_bundle.crt')) {
+    try {
+
+        const credentials = {};
+        credentials.cert = fs.readFileSync(__dirname + '/certsFiles/private.key');
+        credentials.key = fs.readFileSync(__dirname + '/certsFiles/certificate.crt');
+        credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
+        const httpsServer = https.createServer(credentials, app);
+        httpsServer.listen(process.env.PORT_HTTPS || httpsPort, () => {
+            console.log("Https server listing on port : " + httpsPort)
+        });
+    } catch (e) {
+        console.log("Can't start Https server");
+        console.log(e);
+    }
 }
