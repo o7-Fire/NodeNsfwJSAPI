@@ -62,4 +62,4 @@ Adopted from:
 https://github.com/SashiDo/content-moderation-image-api, https://github.com/infinitered/nsfwjs
 
 Preview: 
-https://api.o7fire.ml/
+https://unproxiedforsonar.o7fire.ml:5657/
