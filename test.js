@@ -50,16 +50,10 @@ async function test2() {
             console.error(error);
             process.exit(1);
         }
-        //https and cache in action
+        //cache in action
         try {
-
-            const response = await axios.get('https://localhost:5657/api/json/graphical/classification/' + url);
+            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
             const data = response.data;
-            console.log("```js");
-            console.log("Source: " + url);
-            console.log(data);
-            console.log("```");
-
         } catch (error) {
             console.error(error);
             process.exit(1);
