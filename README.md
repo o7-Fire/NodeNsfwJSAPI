@@ -15,8 +15,44 @@
 
 ### Preview
 - Not 100% perfect
-- ![](https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png)
-- ![](https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png)
+<table align="center">
+  <tbody>
+    <tr>
+      <td align="center">
+        <a
+          href="https://cdn.discordapp.com/attachments/840041811384860709/872868193511825428/unknown.png">
+          <image
+            src="https://cdn.discordapp.com/attachments/840041811384860709/872868193511825428/unknown.png" />
+        </a>
+      </td>
+      <td align="center">
+        <a
+          href="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png">
+          <image
+            src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" />
+        </a>
+      </td>
+      <td align="center">
+        <a
+          href="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png">
+          <image
+            src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png"/>
+        </a>
+      </td>
+            <td align="center">
+        <a
+          href="https://cdn.discordapp.com/attachments/840041811384860709/872868265372831785/unknown.png">
+          <image
+            src="https://cdn.discordapp.com/attachments/840041811384860709/872868265372831785/unknown.png"/>
+        </a>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br />
+
+- after processing and some cahce (pi 4 B)
+- ![](https://media.discordapp.net/attachments/840041811384860709/872868502103535626/unknown.png)
 
 ### Misc
 
