@@ -89,31 +89,32 @@ app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);
 });
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
-    const key = req.body;
+    const key = req.body.toString("hex");
     if (!!cache[key]) {
-        return res.status(200).json(cache[key]);
+        return res.json(cache[key]).status(200);
     }
-    return res.status(404).send("nope");
+    return res.send("nope: " + key).status(404);
 })
 
 
 app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     if (req.body.length < 8) {
-        return res.status(406).json({ error: "less than 8 byte, sus" });
+        return res.json({ error: "less than 8 byte, sus" }).status(406);
     }
     const sha256 = crypto.createHash('sha256');
     sha256.update(req.body);
     const hex = sha256.digest("hex").toString();
     if (!!cache[hex]) {
-        return res.status(200).json(cache[hex]);
+        return res.json(cache[hex]).status(200);
     }
     fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {flag: 'w'});
     const dig = nsfwModel.digest(req.body);
     cache[hex] = dig;//regardless
     if (!dig.error) {
-        return res.status(201).json(dig);
+        return res.json(dig).status(201);
     }
-    res.status(406).json(dig);
+    console.log("Error Processing, Hash: " + hex);
+    res.json(dig).status(406);
 })
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "");
