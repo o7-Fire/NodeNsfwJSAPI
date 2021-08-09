@@ -130,7 +130,7 @@ module.exports = {
     try {
       pic = await axios.get(url, {
         responseType: "arraybuffer",
-        maxContentLength: 1024 * 14
+        maxContentLength: 15e7
       });
     } catch (err) {
       console.error("Download Image Error:", err);

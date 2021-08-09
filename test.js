@@ -13,7 +13,7 @@ async function test5() {
         try {
             console.log("\n\n");
             const buf = fs.readFileSync(file, {encoding: "binary"});
-            const response = await axios.post('http://localhost:5656//api/json/graphical/classification', {data: buf});
+            const response = await axios.post('http://localhost:5656/api/json/graphical/classification', {data: buf});
             console.log(response.data);
         } catch (error) {
             console.error(error);
