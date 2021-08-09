@@ -28,7 +28,7 @@ async function test5() {
             const sha256 = crypto.createHash('sha256');
             sha256.update(buf);
             const digest = sha256.digest();
-            const response = await axios(options);
+            const response = await axios(options);//help axios don't want to receive post data response
             options.url += "/hash";
             options.data = digest;
             await axios(options);
