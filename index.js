@@ -7,12 +7,23 @@ const express = require("express");
 const app = express();
 const fs = require('fs');
 const bodyParser = require("body-parser");
-const nsfwModel = require("./src/NSFWModel");
 const http = require('http');
 const https = require('https');
 const httpPort = 5656;
 const httpsPort = 5657;
+const isLinux = process.platform === "linux";
 
+if(isLinux){
+const cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
+const haveAVX = cpuinfo.includes("avx");
+if(!haveAVX){
+    console.log(cpuinfo);
+    console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
+    const err = new Error("No AVX");
+    throw err;
+}
+}
+const nsfwModel = require("./src/NSFWModel");
 nsfwModel.init().then(() => {
     cache = [];
 });
