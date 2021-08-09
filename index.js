@@ -90,7 +90,7 @@ app.get("/api/json/graphical", (req, res) => {
 });
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body;
-    if (!cache[key]) {
+    if (!!cache[key]) {
         return res.status(200).json(cache[key]);
     }
     return res.status(404).send("nope");
@@ -103,13 +103,13 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     }
     const sha256 = crypto.createHash('sha256');
     sha256.update(req.body);
-    const base64 = sha256.digest("base64").toString();
-    if (!cache[base64]) {
-        return res.status(200).json(cache[base64]);
+    const hex = sha256.digest("hex").toString();
+    if (!!cache[hex]) {
+        return res.status(200).json(cache[hex]);
     }
-    fs.writeFile(cacheDir + "/" + base64 + ".png", req.body);
+    fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {flag: 'w'});
     const dig = nsfwModel.digest(req.body);
-    cache[base64] = dig;//regardless
+    cache[hex] = dig;//regardless
     if (!dig.error) {
         return res.status(201).json(dig);
     }

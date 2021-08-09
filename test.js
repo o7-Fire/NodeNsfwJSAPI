@@ -1,6 +1,7 @@
-const nsfwModel = require("./src/NSFWModel");
+//const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
 const fs = require('fs');
+console.log("Test mode");
 const scanList = [
     "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
@@ -12,9 +13,16 @@ async function test5() {
     for (const file of fileTest) {
         try {
             console.log("\n\n");
-            const buf = fs.readFileSync(file, {encoding: "binary"});
-            const response = await axios.post('http://localhost:5656/api/json/graphical/classification', {data: buf});
+            const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
+            const options = {
+                url: "http://localhost:5656/api/json/graphical/classification",
+                method: 'POST',
+                headers: { 'content-type': 'application/octet-stream' },
+                data: buf
+              };
+            const response = await axios(options);
             console.log(response.data);
+            console.log(response.data.model.url);
         } catch (error) {
             console.error(error);
             process.exit(1);
@@ -23,6 +31,8 @@ async function test5() {
 
     process.exit(0);
 }
+test5();
+return;
 async function test4() {
     try {
         console.log("\n\n");
@@ -63,7 +73,7 @@ async function test2() {
             console.log("Source: " + url);
             console.log(data);
             console.log("```");
-
+            console.log(data.model.url);
         } catch (error) {
             console.error(error);
             process.exit(1);
@@ -72,6 +82,7 @@ async function test2() {
         try {
             const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
             const data = response.data;
+            console.log(data.model.url);
         } catch (error) {
             console.error(error);
             process.exit(1);
