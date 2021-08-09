@@ -21,7 +21,7 @@ async function test5() {
             const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
-                method: 'POST',
+                method: 'post',
                 headers: { 'content-type': 'application/octet-stream' },
                 data: buf
             };
