@@ -28,15 +28,13 @@ if (isLinux) {
         //throw err;
     }
 }
+let nsfwModel = {}
 if (haveAVX) {
-    const nsfwModel = require("./src/NSFWModel");
+    nsfwModel = require("./src/NSFWModel");
     nsfwModel.init().then(() => {
         cache = [];
     });
-} else {
-    const nsfwModel = {};
-}
-
+} 
 const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({ extended: true })
 const rawParser = bodyParser.raw({ type: '*/*', limit: '8mb' });
