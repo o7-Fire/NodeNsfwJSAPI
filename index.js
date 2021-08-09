@@ -9,44 +9,54 @@ const fs = require('fs');
 const bodyParser = require("body-parser");
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const httpPort = 5656;
 const httpsPort = 5657;
 const isLinux = process.platform === "linux";
-
-if(isLinux){
-const cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
-const haveAVX = cpuinfo.includes("avx");
-if(!haveAVX){
-    console.log(cpuinfo);
-    console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
-    const err = new Error("No AVX");
-    throw err;
+const cacheDir = __dirname + "/pics";
+try {
+    fs.mkdirSync(cacheDir);
+} catch (e) { }
+let haveAVX = true;
+if (isLinux) {
+    const cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
+    haveAVX = cpuinfo.includes("avx");
+    if (!haveAVX) {
+        console.log(cpuinfo);
+        console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
+        const err = new Error("No AVX");
+        //throw err;
+    }
 }
+if (haveAVX) {
+    const nsfwModel = require("./src/NSFWModel");
+    nsfwModel.init().then(() => {
+        cache = [];
+    });
+} else {
+    const nsfwModel = {};
 }
-const nsfwModel = require("./src/NSFWModel");
-nsfwModel.init().then(() => {
-    cache = [];
-});
 
+const jsonParser = bodyParser.json();
+const urlencodedParser = bodyParser.urlencoded({ extended: true })
+const rawParser = bodyParser.raw({ type: '*/*', limit: '8mb' });
 app.head("/", (request, response) => {
     response.status(200);
 });
 // make all the files in 'public' available
 app.use(express.static("public"));
-app.use(bodyParser.json()); // for parsing application/json
-app.use(bodyParser.urlencoded({
-    extended: true
-})); // for parsing application/x-www-form-urlencoded
-app.use(function(req, res, next) {
-    if (!req.headers.authorization && process.env.SECRET) {
-        console.log("no auth");
+app.use(function (req, res, next) {
+    if (!process.env.NODE_NSFW_KEY) {
+        next();
+    } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
+        console.log("No auth");
         return res.status(403).json({
-            error: "No credentials sent!"
+            error: "No Authorization Provided"
         });
-    } else if (req.headers.authorization !== process.env.SECRET) {
+    } else if (req.headers.authorization !== process.env.NODE_NSFW_KEY) {
         console.log("invalid auth");
         return res.status(403).json({
-            error: "No credentials sent!!"
+            error: "Invalid Authorization"
         });
     } else {
         next();
@@ -55,13 +65,12 @@ app.use(function(req, res, next) {
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-let cache = [];
+let cache = [];//todo use proper database lmao
 let discordVideo = [".gif", ".mp4", ".webm"];
 
 async function classify(url, req, res) {
     console.log(req.url + ":" + url);
     const hash = url;
-
     try {
         if (!cache[hash]) {
             cache[hash] = await nsfwModel.classify(url);
@@ -81,13 +90,40 @@ app.get("/api/json/test", (req, res) => {
 app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);
 });
+app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
+    const key = req.body;
+    if (!cache[key]) {
+        return res.status(200).json(cache[key]);
+    }
+    return res.status(404).send("nope");
+})
+
+
+app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
+    if (req.body.length < 8) {
+        return res.status(406).json({ error: "less than 8 byte, sus" });
+    }
+    const sha256 = crypto.createHash('sha256');
+    sha256.update(req.body);
+    const base64 = sha256.digest("base64").toString();
+    if (!cache[base64]) {
+        return res.status(200).json(cache[base64]);
+    }
+    fs.writeFile(cacheDir + "/" + base64 + ".png", req.body);
+    const dig = nsfwModel.digest(req.body);
+    cache[base64] = dig;//regardless
+    if (!dig.error) {
+        return res.status(201).json(dig);
+    }
+    res.status(406).json(dig);
+})
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "");
     if (!url) return;
     let body = {};
     let allowed = true;
-    body.error = "Not allowed";
-    status = 405;
+    body.error = "Not allowed/Discord media only or ended with media extension";
+    code = 406;
     if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
         for (const ext of discordVideo) {
             if (url.endsWith(ext)) {
@@ -110,22 +146,21 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
         if (
             !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg"))
         ) {
-            res.status(415);
+            stat = 415;
             body.error = "Only allow https://cdn.discordapp.com/ or picture";
-            res.json(body);
             allowed = false;
         }
 
     }
 
     if (!allowed) {
-        res.status(status).json(body);
+        res.status(stat).json(body);
         return;
     }
     await classify(url, req, res);
 });
 
-app.get("*", function(req, res) {
+app.get("*", function (req, res) {
     res.status(404);
 
     // respond with json

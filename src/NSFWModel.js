@@ -86,6 +86,7 @@ module.exports = {
         //model_url, { size: parseInt(shape_size) }
         if (!model_url || !shape_size) model = await nsfw.load();
         else {
+          model = {};
           model = await nsfw.load(model_url, { size: parseInt(shape_size) });
           currentModel.size = shape_size;
           currentModel.url = model_url;
@@ -97,26 +98,14 @@ module.exports = {
       }
     }
   },
-  classify: async function(url) {
-    let pic;
-    let result = {};
-    try {
-      pic = await axios.get(url, {
-        responseType: "arraybuffer"
-      });
-    } catch (err) {
-      console.error("Download Image Error:", err);
-      result.error = err;
-      return result;
-    }
-
-    try {
+  digest: async function(data, gif){
       // Image must be in tf.tensor3d format
       // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
-      const image = await tf.node.decodeImage(pic.data, 3);
+      const image = await tf.node.decodeImage(data, 3);
       let prediction;
-      if (url.toString().endsWith(".gif")) {
-        prediction = await model.classifyGif(image);
+      if (gif) {
+        throw new Error("GIF not supported ATM")
+        //prediction = await model.classifyGif(image);
       } else {
         prediction = await model.classify(image);
       }
@@ -132,36 +121,25 @@ module.exports = {
         let c1 = prediction[predictionKey1].className;
         reportPrediction[c1] = prediction[predictionKey1].probability;
       }
-      //enable if you want shitshow
-      /*
-                  for (const predictionKey1 in prediction) {
-                      let c1 = prediction[predictionKey1].className;
-                      let v1 = prediction[predictionKey1].probability;
-                      for (const predictionKey2 in prediction) {
-
-                          let c2 = prediction[predictionKey2].className;
-                          let v2 = prediction[predictionKey2].probability;
-                          c1 = t1.className
-                          v1 = t1.probability
-                          c2 = t2.className
-                          v2 = t2.probability
-                          let c3 = report[c1][c2];
-                          if (!c3) continue;
-                          if(c3.n1) {
-                              reportPrediction[c3.n1] = v1 - v2;
-                              reportPrediction[c3.n1] = 1 - reportPrediction[c3.n1]
-                          }else {
-                              reportPrediction[c3] =  v1 - v2;
-                          }
-                      }
-                  }
-
-                   */
-      //reportPrediction["Goodluck Figuring out this data"] = 0;
-      //reportPrediction["ModelURL "+  currentModel.name] = 0
-      //reportPrediction["ModelSize "+  currentModel.size] = 0
       reportPrediction.model = currentModel;
-      result = reportPrediction;
+      return reportPrediction;
+  },
+  classify: async function(url) {
+    let pic;
+    let result = {};
+    try {
+      pic = await axios.get(url, {
+        responseType: "arraybuffer",
+        maxContentLength: 1024 * 14
+      });
+    } catch (err) {
+      console.error("Download Image Error:", err);
+      result.error = err;
+      return result;
+    }
+    const gif = url.toString().endsWith(".gif");
+    try {
+      result = this.digest(pic.data, gif);
     } catch (err) {
       console.error("Prediction Error: ", err);
       result.error = err.toString();

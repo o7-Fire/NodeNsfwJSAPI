@@ -1,17 +1,35 @@
 const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
+const fs = require('fs');
 const scanList = [
     "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
     "https://media.discordapp.net/attachments/840041811384860708/869557735585362001/cancer-memri.gif"
 ];
+const fileTest = ["pics/sexy.png", "pics/drawing.png"]
+async function test5() {
+    console.log("Test 5");
+    for (const file of fileTest) {
+        try {
+            console.log("\n\n");
+            const buf = fs.readFileSync(file, {encoding: "binary"});
+            const response = await axios.post('http://localhost:5656//api/json/graphical/classification', {data: buf});
+            console.log(response.data);
+        } catch (error) {
+            console.error(error);
+            process.exit(1);
+        }
+    }
+
+    process.exit(0);
+}
 async function test4() {
     try {
         console.log("\n\n");
         console.log("Test 4");
         const response = await axios.get('http://localhost:5656/api/json/test');
         console.log(response.data);
-        process.exit(0);
+        test5();    
     } catch (error) {
         console.error(error);
         process.exit(1);
