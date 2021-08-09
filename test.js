@@ -29,9 +29,8 @@ async function test5() {
             sha256.update(buf);
             const digest = sha256.digest();
             const response = await axios(options);
-            console.log(response.data);
-            console.log(response.data.model.url);
             options.url += "/hash";
+            options.data = digest;
             await axios(options);
         } catch (error) {
             console.error(error);
