@@ -1,4 +1,4 @@
-//const nsfwModel = require("./src/NSFWModel");
+const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
 const fs = require('fs');
 console.log("Test mode");
@@ -31,8 +31,7 @@ async function test5() {
 
     process.exit(0);
 }
-test5();
-return;
+
 async function test4() {
     try {
         console.log("\n\n");
