@@ -116,6 +116,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     console.log("Error Processing, Hash: " + hex);
     res.json(dig).status(406);
 })
+
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.replace("/api/json/graphical/classification/", "");
     if (!url) return;
