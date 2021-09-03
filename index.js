@@ -16,34 +16,42 @@ const isLinux = process.platform === "linux";
 const cacheDir = __dirname + "/pics";
 try {
     fs.mkdirSync(cacheDir);
-} catch (e) { }
+} catch (e) {}
 let haveAVX = true;
+
 if (isLinux) {
     const cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
     haveAVX = cpuinfo.includes("avx");
-    if (!haveAVX) {
-        console.log(cpuinfo);
-        console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
-        const err = new Error("No AVX");
-        //throw err;
-    }
 }
+
+if (!haveAVX) {
+    console.log(cpuinfo);
+    console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
+    const err = new Error("No AVX");
+    throw err;
+}
+
 let nsfwModel = {}
 if (haveAVX) {
     nsfwModel = require("./src/NSFWModel");
     nsfwModel.init().then(() => {
         cache = [];
     });
-} 
+}
 const jsonParser = bodyParser.json();
-const urlencodedParser = bodyParser.urlencoded({ extended: true })
-const rawParser = bodyParser.raw({ type: '*/*', limit: '8mb' });
+const urlencodedParser = bodyParser.urlencoded({
+    extended: true
+})
+const rawParser = bodyParser.raw({
+    type: '*/*',
+    limit: '8mb'
+});
 app.head("/", (request, response) => {
     response.status(200);
 });
 // make all the files in 'public' available
 app.use(express.static("public"));
-app.use(function (req, res, next) {
+app.use(function(req, res, next) {
     if (!process.env.NODE_NSFW_KEY) {
         next();
     } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
@@ -63,7 +71,7 @@ app.use(function (req, res, next) {
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-let cache = [];//todo use proper database lmao
+let cache = []; //todo use proper database lmao
 let discordVideo = [".gif", ".mp4", ".webm"];
 
 async function classify(url, req, res) {
@@ -99,7 +107,9 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
 
 app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     if (req.body.length < 8) {
-        return res.json({ error: "less than 8 byte, sus" }).status(406);
+        return res.json({
+            error: "less than 8 byte, sus"
+        }).status(406);
     }
     const sha256 = crypto.createHash('sha256');
     sha256.update(req.body);
@@ -107,9 +117,11 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     if (!!cache[hex]) {
         return res.json(cache[hex]).status(200);
     }
-    fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {flag: 'w'});
+    fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {
+        flag: 'w'
+    });
     const dig = nsfwModel.digest(req.body);
-    cache[hex] = dig;//regardless
+    cache[hex] = dig; //regardless
     if (!dig.error) {
         return res.json(dig).status(201);
     }
@@ -160,7 +172,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     await classify(url, req, res);
 });
 
-app.get("*", function (req, res) {
+app.get("*", function(req, res) {
     res.status(404);
 
     // respond with json
