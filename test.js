@@ -9,20 +9,30 @@ const scanList = [
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
     "https://media.discordapp.net/attachments/840041811384860708/869557735585362001/cancer-memri.gif"
 ];
-const fileTest = ["pics/sexy.png", "pics/drawing.png"]
-
+const fileTest = {}
+fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/sexy.png";
+fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/drawing.png";
+fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
+
+async function downloadFile(fileUrl, outputLocationPath) {
+    console.log("Downloading: " + fileUrl)
+    const response = await axios.get(fileUrl, {responseType: "stream"})
+    response.data.pipe(fs.createWriteStream(outputLocationPath));
+}
 
 async function test5() {
     console.log("Test 5");
-    for (const file of fileTest) {
+
+    for (const file in fileTest) {
         try {
+            await downloadFile(fileTest[file], file)
             console.log("\n\n");
             const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
                 method: 'post',
-                headers: { 'content-type': 'application/octet-stream' },
+                headers: {'content-type': 'application/octet-stream'},
                 data: buf
             };
             const sha256 = crypto.createHash('sha256');
@@ -53,6 +63,7 @@ async function test4() {
         process.exit(1);
     }
 }
+
 async function test3() {
     try {
         console.log("\n\n");
@@ -68,6 +79,7 @@ async function test3() {
         process.exit(1);
     }
 }
+
 async function test2() {
     console.log("\n\n");
     console.log("Test 2");
@@ -98,6 +110,7 @@ async function test2() {
     }
     test3();
 }
+
 async function test1() {
     try {
         console.log("\n\n");

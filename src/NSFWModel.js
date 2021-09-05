@@ -11,6 +11,7 @@ let currentModel = {
   size: "Default"
 };
 //Using n1 do 1 - (n1 - n2)
+//basically a matrix
 const report = {
   Drawing: {
     Hentai: "Anime",
@@ -36,7 +37,8 @@ const report = {
     Porn: "Doujin18",
     Drawing: {n1: "R34"}
   }
-}; //Combining thing make new thing
+};
+//what this
 const convert = async img => {
   // Decoded image in UInt8 Byte array
   const image = await jpeg.decode(img, true);
@@ -101,14 +103,17 @@ module.exports = {
   digest: async function(data, gif){
       // Image must be in tf.tensor3d format
       // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
-      const image = await tf.node.decodeImage(data, 3);
+
       let prediction;
       if (gif) {
-        throw new Error("GIF not supported ATM")
-        //prediction = await model.classifyGif(image);
+        //throw new Error("GIF not supported ATM")
+        const image = await tf.node.decodeGif(data, 3);
+        prediction = await model.classifyGif(image);
       } else {
+        const image = await tf.node.decodeImage(data, 3);
         prediction = await model.classify(image);
       }
+
       let reportPrediction = {};
       let t1 = prediction[0];
       let t2 = prediction[1];
