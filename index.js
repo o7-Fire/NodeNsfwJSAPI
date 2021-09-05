@@ -10,8 +10,8 @@ const bodyParser = require("body-parser");
 const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
-const httpPort = 5656;
-const httpsPort = 5657;
+const httpPort = process.env.PORT || 5656;
+const httpsPort = process.env.PORT_HTTPS || 5657;
 const isLinux = process.platform === "linux";
 const cacheDir = __dirname + "/pics";
 try {
