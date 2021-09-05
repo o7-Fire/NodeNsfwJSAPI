@@ -22,4 +22,4 @@ VOLUME [ "/home/mossad" ]
 
 COPY . .
 
-ENTRYPOINT [ "node", "index.js" ]
+ENTRYPOINT [ "npm", "start" ]
