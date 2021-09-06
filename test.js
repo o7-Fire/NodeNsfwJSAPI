@@ -60,6 +60,7 @@ async function test5() {
             const digest = sha256.digest();
             const response = await axios(options);//help axios don't want to receive post data response
             try {
+                console.log(response.headers)
                 console.log(response.data)
             }catch (e){}
             options.url += "/hash";

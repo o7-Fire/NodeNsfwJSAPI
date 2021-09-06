@@ -28,7 +28,7 @@ if (!haveAVX) {
     console.log(cpuinfo);
     console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
     const err = new Error("No AVX");
-    throw err;
+    //throw err;
 }
 
 let nsfwModel = {}
@@ -123,6 +123,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     });
     const dig = nsfwModel.digest(req.body);
     cache[hex] = dig; //regardless
+    res.set(dig);
     if (!dig.error) {
         return res.json(dig).status(201);
     }
