@@ -99,9 +99,12 @@ app.get("/api/json/graphical", (req, res) => {
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body.toString("hex");
     if (!!cache[key]) {
-        return res.json(cache[key]).status(200);
+        res.set(cache[key])
+        res.json(cache[key]).status(200);
+        return res.end()
     }
-    return res.send("nope: " + key).status(404);
+    res.send("nope: " + key).status(404);
+    res.end()
 })
 
 
@@ -125,10 +128,12 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     cache[hex] = dig; //regardless
     res.set(dig);
     if (!dig.error) {
-        return res.json(dig).status(201);
+        res.json(dig).status(201);
+        return res.end()
     }
     console.log("Error Processing, Hash: " + hex);
     res.json(dig).status(406);
+    res.end()
 })
 
 app.get("/api/json/graphical/classification/*", async (req, res) => {
