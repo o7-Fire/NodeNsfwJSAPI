@@ -14,7 +14,8 @@ fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url
 fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/drawing.png";
 fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
-fs.mkdirSync(__dirname+"/pics");
+console.log(__dirname);
+fs.mkdirSync(__dirname+"/pics", { recursive: true });
 async function downloadFile(fileUrl, outputLocationPath) {
     console.log("Downloading: " + fileUrl)
     const response = await axios.get(fileUrl, {responseType: "stream"})
