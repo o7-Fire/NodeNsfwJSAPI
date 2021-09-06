@@ -27,6 +27,7 @@ async function test5() {
     for (const file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
+            file = __dirname+"/"+file
             console.log("\n\n");
             const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
             const options = {
