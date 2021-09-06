@@ -1,9 +1,11 @@
 // you can use any other http client
+import {ImageType} from "@tensorflow/tfjs-node/src/image";
+
 const axios = require("axios");
 const tf = require("@tensorflow/tfjs-node");
 const nsfw = require("nsfwjs");
 const jpeg = require("jpeg-js");
-const tfImage = require("@tensorflow/tfjs-node/src/image");
+
 tf.enableProdMode(); // enable on production
 
 let model;
@@ -103,6 +105,36 @@ async function classifyGif(gif) {
     }
     return arrayPredict;
 }
+export function getImageType(content) {
+    // Classify the contents of a file based on starting bytes (aka magic number:
+    // https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files)
+    // This aligns with TensorFlow Core code:
+    // https://github.com/tensorflow/tensorflow/blob/4213d5c1bd921f8d5b7b2dc4bbf1eea78d0b5258/tensorflow/core/kernels/decode_image_op.cc#L44
+    if (content.length > 3 && content[0] === 255 && content[1] === 216 &&
+        content[2] === 255) {
+        // JPEG byte chunk starts with `ff d8 ff`
+        return ImageType.JPEG;
+    } else if (
+        content.length > 4 && content[0] === 71 && content[1] === 73 &&
+        content[2] === 70 && content[3] === 56) {
+        // GIF byte chunk starts with `47 49 46 38`
+        return ImageType.GIF;
+    } else if (
+        content.length > 8 && content[0] === 137 && content[1] === 80 &&
+        content[2] === 78 && content[3] === 71 && content[4] === 13 &&
+        content[5] === 10 && content[6] === 26 && content[7] === 10) {
+        // PNG byte chunk starts with `\211 P N G \r \n \032 \n (89 50 4E 47 0D 0A
+        // 1A 0A)`
+        return ImageType.PNG;
+    } else if (content.length > 3 && content[0] === 66 && content[1] === 77) {
+        // BMP byte chunk starts with `42 4d`
+        return ImageType.BMP;
+    } else {
+        throw new Error(
+            'Expected image (BMP, JPEG, PNG, or GIF), but got unsupported ' +
+            'image type');
+    }
+}
 
 module.exports = {
     report: report,
@@ -135,7 +167,8 @@ module.exports = {
         let image = {};
         image.dispose = function () {
         }
-        const gif = tfImage.getImageType(data) === tfImage.ImageType.GIF
+
+        const gif = getImageType(data) === ImageType.GIF
       //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
 
