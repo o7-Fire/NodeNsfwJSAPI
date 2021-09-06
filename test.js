@@ -14,7 +14,7 @@ fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url
 fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/drawing.png";
 fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
-
+fs.mkdirSync("pics");
 async function downloadFile(fileUrl, outputLocationPath) {
     console.log("Downloading: " + fileUrl)
     const response = await axios.get(fileUrl, {responseType: "stream"})
@@ -23,7 +23,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 async function test5() {
     console.log("Test 5");
-
+    
     for (const file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
