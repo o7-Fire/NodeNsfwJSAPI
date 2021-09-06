@@ -29,7 +29,7 @@ async function test5() {
         try {
             await downloadFile(fileTest[file], file)
             console.log("\n\n");
-            const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
+            const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
                 method: 'post',
