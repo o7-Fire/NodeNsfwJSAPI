@@ -24,7 +24,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
 async function test5() {
     console.log("Test 5");
     
-    for (const file in fileTest) {
+    for (let file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
             file = __dirname+"/"+file
