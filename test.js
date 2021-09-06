@@ -17,9 +17,9 @@ console.log("Test mode");
 
 fs.mkdirSync("pics/", { recursive: true });
 async function downloadFile(fileUrl, outputLocationPath) {
-    console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
-    const response = await axios.get(fileUrl, {responseType: "stream"})
-    response.data.pipe(fs.createWriteStream(outputLocationPath));
+    //console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
+    const response = await axios.get(fileUrl, {responseType: "arraybuffer"})
+    return response.data
 }
 
 async function test5() {
@@ -27,13 +27,13 @@ async function test5() {
     
     for (let file in fileTest) {
         try {
-            await downloadFile(fileTest[file], file)
+            const buf = await downloadFile(fileTest[file], file)
             console.log("\n\n");
-            fs.readdirSync(__dirname).forEach(file => {console.log(file);});
-            console.log("\n")
-            fs.readdirSync(__dirname+"/pics").forEach(file => {console.log(file);});
+            //fs.readdirSync(__dirname).forEach(file => {console.log(file);});
+            //console.log("\n")
+            //fs.readdirSync(__dirname+"/pics").forEach(file => {console.log(file);});
 
-            const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
+            //const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
                 method: 'post',
