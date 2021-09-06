@@ -4,48 +4,40 @@ const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
 const fs = require('fs');
 const crypto = require('crypto');
+const Path = require("path");
+const Fs = require("fs");
+const Axios = require("axios");
 const scanList = [
     "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
     "https://media.discordapp.net/attachments/840041811384860708/869557735585362001/cancer-memri.gif"
 ];
 const fileTest = {}
-fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/sexy.png";
-fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/drawing.png";
-fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/neutral.png";
+fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
+fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/drawing.png";
+fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
+Fs.mkdirSync(Path.resolve(__dirname, 'pics'), {recursive: true})
 
-fs.mkdirSync("pics/", { recursive: true });
 async function downloadFile(fileUrl, outputLocationPath) {
     console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
-  const writer = createWriteStream(outputLocationPath);
+    const path = Path.resolve(__dirname, outputLocationPath)
 
-  return axios({
-    method: 'get',
-    url: fileUrl,
-    responseType: 'stream',
-  }).then(response => {
+    const writer = Fs.createWriteStream(path)
 
-    //ensure that the user can call `then()` only when the file has
-    //been downloaded entirely.
+    const response = await Axios({
+        fileUrl,
+        method: 'GET',
+        responseType: 'stream'
+    })
+
+    response.data.pipe(writer)
 
     return new Promise((resolve, reject) => {
-      response.data.pipe(writer);
-      let error = null;
-      writer.on('error', err => {
-        error = err;
-        writer.close();
-        reject(err);
-      });
-      writer.on('close', () => {
-        if (!error) {
-          resolve(true);
-        }
-        //no need to call the reject here, as it will have been called in the
-        //'error' stream;
-      });
-    });
-  });
+        writer.on('finish', resolve)
+        writer.on('error', reject)
+    })
+
 }
 
 async function test5() {
