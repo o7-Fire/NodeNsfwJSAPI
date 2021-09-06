@@ -104,7 +104,7 @@ async function classifyGif(gif) {
     }
     return arrayPredict;
 }
-export function getImageType(content) {
+function getImageType(content) {
     // Classify the contents of a file based on starting bytes (aka magic number:
     // https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files)
     // This aligns with TensorFlow Core code:
