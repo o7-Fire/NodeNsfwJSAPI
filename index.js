@@ -117,6 +117,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     if (!!cache[hex]) {
         return res.json(cache[hex]).status(200);
     }
+    if(process.env.CACHE_IMAGE_HASH_FILE)
     fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {
         flag: 'w'
     });
@@ -156,10 +157,10 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     } else {
 
         if (
-            !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg"))
+            !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
         ) {
             stat = 415;
-            body.error = "Only allow https://cdn.discordapp.com/ or picture";
+            body.error = "Only allow https://cdn.discordapp.com/ or png, jpeg, bmg, jpg, gif";
             allowed = false;
         }
 
@@ -193,7 +194,7 @@ const listener = app.listen(process.env.PORT || 5656, () => {
 });
 */
 const httpServer = http.createServer(app);
-httpServer.listen(process.env.PORT_HTTP || httpPort, () => {
+httpServer.listen(httpPort, () => {
     console.log("Http server listing on port : " + httpPort)
 });
 if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
@@ -206,7 +207,7 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
         }
         const httpsServer = https.createServer(credentials, app);
-        httpsServer.listen(process.env.PORT_HTTPS || httpsPort, () => {
+        httpsServer.listen( httpsPort, () => {
             console.log("Https server listing on port : " + httpsPort)
         });
     } catch (e) {
