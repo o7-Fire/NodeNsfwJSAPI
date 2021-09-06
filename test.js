@@ -18,7 +18,7 @@ fs.mkdirSync("pics");
 async function downloadFile(fileUrl, outputLocationPath) {
     console.log("Downloading: " + fileUrl)
     const response = await axios.get(fileUrl, {responseType: "stream"})
-    response.data.pipe(fs.createWriteStream(outputLocationPath));
+    response.data.pipe(fs.createWriteStream(__dirname+"/"+outputLocationPath));
 }
 
 async function test5() {
