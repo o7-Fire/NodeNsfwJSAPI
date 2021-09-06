@@ -1,5 +1,4 @@
 // you can use any other http client
-import {ImageType} from "@tensorflow/tfjs-node/src/image";
 
 const axios = require("axios");
 const tf = require("@tensorflow/tfjs-node");
