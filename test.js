@@ -43,7 +43,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 async function test5() {
     console.log("Test 5");
-    
+
     for (let file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
@@ -66,7 +66,10 @@ async function test5() {
             }catch (e){}
             options.url += "/hash";
             options.data = digest;
-            await axios(options);
+            const hashRes = await axios(options);
+            if(hashRes.status !== 200) {
+                throw new Error("Uncached: " + file)
+            }
         } catch (error) {
             console.error(error);
             process.exit(1);

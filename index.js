@@ -10,6 +10,7 @@ const bodyParser = require("body-parser");
 const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
+const Path = require("path");
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
 const isLinux = process.platform === "linux";
@@ -18,9 +19,9 @@ try {
     fs.mkdirSync(cacheDir);
 } catch (e) {}
 let haveAVX = true;
-
+let cpuinfo = "None";
 if (isLinux) {
-    const cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
+    cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
     haveAVX = cpuinfo.includes("avx");
 }
 
@@ -37,6 +38,10 @@ if (haveAVX) {
     nsfwModel.init().then(() => {
         cache = [];
     });
+}else {
+    nsfwModel.digest = async function () {
+        return {stub: "very stub"}
+    }
 }
 const jsonParser = bodyParser.json();
 const urlencodedParser = bodyParser.urlencoded({
@@ -121,10 +126,10 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
         return res.json(cache[hex]).status(200);
     }
     if(process.env.CACHE_IMAGE_HASH_FILE)
-    fs.writeFileSync(cacheDir + "/" + hex + ".png", req.body, {
+    fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex+".webm")), req.body, {
         flag: 'w'
     });
-    const dig = nsfwModel.digest(req.body);
+    const dig = await nsfwModel.digest(req.body);
     cache[hex] = dig; //regardless
     res.set(dig);
     if (!dig.error) {
