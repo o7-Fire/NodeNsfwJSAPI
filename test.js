@@ -48,11 +48,7 @@ async function test5() {
         try {
             await downloadFile(fileTest[file], file)
             console.log("\n\n");
-            fs.readdirSync(__dirname).forEach(file => {console.log(file);});
-
-            fs.readdirSync("pics").forEach(file => {console.log(file);});
-
-            const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
+            const buf = Buffer.from(fs.readFileSync(Path.resolve(__dirname, file), "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
                 method: 'post',
