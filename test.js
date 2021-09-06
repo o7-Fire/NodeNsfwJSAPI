@@ -30,8 +30,8 @@ async function test5() {
             await downloadFile(fileTest[file], file)
             console.log("\n\n");
             fs.readdirSync(__dirname).forEach(file => {console.log(file);});
-
-            fs.readdirSync("pics").forEach(file => {console.log(file);});
+            console.log("\n")
+            fs.readdirSync(__dirname+"/pics").forEach(file => {console.log(file);});
 
             const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
             const options = {
