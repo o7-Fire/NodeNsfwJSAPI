@@ -14,12 +14,12 @@ fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url
 fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/drawing.png";
 fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/api/image/classify?url=https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
-console.log(__dirname);
-fs.mkdirSync(__dirname+"/pics", { recursive: true });
+
+fs.mkdirSync("pics", { recursive: true });
 async function downloadFile(fileUrl, outputLocationPath) {
-    console.log("Downloading: " + fileUrl)
+    console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
     const response = await axios.get(fileUrl, {responseType: "stream"})
-    response.data.pipe(fs.createWriteStream(__dirname+"/"+outputLocationPath));
+    response.data.pipe(fs.createWriteStream(outputLocationPath));
 }
 
 async function test5() {
@@ -28,7 +28,6 @@ async function test5() {
     for (let file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
-            file = __dirname+"/"+file
             console.log("\n\n");
             const buf = Buffer.from(fs.readFileSync(file, "binary"), "binary");
             const options = {
