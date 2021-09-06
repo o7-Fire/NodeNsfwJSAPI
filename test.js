@@ -6,7 +6,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const Path = require("path");
 const Fs = require("fs");
-const Axios = require("axios");
+
 const scanList = [
     "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
@@ -25,11 +25,12 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
     const writer = Fs.createWriteStream(path)
 
-    const response = await Axios({
+    const response = await axios.get(
         fileUrl,
-        method: 'GET',
-        responseType: 'stream'
-    })
+        {
+            responseType: 'stream'
+        }
+    )
 
     response.data.pipe(writer)
 
