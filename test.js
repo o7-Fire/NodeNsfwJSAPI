@@ -17,9 +17,35 @@ console.log("Test mode");
 
 fs.mkdirSync("pics/", { recursive: true });
 async function downloadFile(fileUrl, outputLocationPath) {
-    //console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
-    const response = await axios.get(fileUrl, {responseType: "arraybuffer"})
-    return response.data
+    console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
+  const writer = createWriteStream(outputLocationPath);
+
+  return axios({
+    method: 'get',
+    url: fileUrl,
+    responseType: 'stream',
+  }).then(response => {
+
+    //ensure that the user can call `then()` only when the file has
+    //been downloaded entirely.
+
+    return new Promise((resolve, reject) => {
+      response.data.pipe(writer);
+      let error = null;
+      writer.on('error', err => {
+        error = err;
+        writer.close();
+        reject(err);
+      });
+      writer.on('close', () => {
+        if (!error) {
+          resolve(true);
+        }
+        //no need to call the reject here, as it will have been called in the
+        //'error' stream;
+      });
+    });
+  });
 }
 
 async function test5() {
@@ -27,13 +53,13 @@ async function test5() {
     
     for (let file in fileTest) {
         try {
-            const buf = await downloadFile(fileTest[file], file)
+            await downloadFile(fileTest[file], file)
             console.log("\n\n");
-            //fs.readdirSync(__dirname).forEach(file => {console.log(file);});
-            //console.log("\n")
-            //fs.readdirSync(__dirname+"/pics").forEach(file => {console.log(file);});
+            fs.readdirSync(__dirname).forEach(file => {console.log(file);});
 
-            //const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
+            fs.readdirSync("pics").forEach(file => {console.log(file);});
+
+            const buf = Buffer.from(fs.readFileSync(__dirname + "/" + file, "binary"), "binary");
             const options = {
                 url: "http://localhost:5656/api/json/graphical/classification",
                 method: 'post',
