@@ -112,22 +112,22 @@ function getImageType(content) {
     if (content.length > 3 && content[0] === 255 && content[1] === 216 &&
         content[2] === 255) {
         // JPEG byte chunk starts with `ff d8 ff`
-        return ImageType.JPEG;
+        return "JPEG";
     } else if (
         content.length > 4 && content[0] === 71 && content[1] === 73 &&
         content[2] === 70 && content[3] === 56) {
         // GIF byte chunk starts with `47 49 46 38`
-        return ImageType.GIF;
+        return "GIF";
     } else if (
         content.length > 8 && content[0] === 137 && content[1] === 80 &&
         content[2] === 78 && content[3] === 71 && content[4] === 13 &&
         content[5] === 10 && content[6] === 26 && content[7] === 10) {
         // PNG byte chunk starts with `\211 P N G \r \n \032 \n (89 50 4E 47 0D 0A
         // 1A 0A)`
-        return ImageType.PNG;
+        return "PNG";
     } else if (content.length > 3 && content[0] === 66 && content[1] === 77) {
         // BMP byte chunk starts with `42 4d`
-        return ImageType.BMP;
+        return "BMP";
     } else {
         throw new Error(
             'Expected image (BMP, JPEG, PNG, or GIF), but got unsupported ' +
@@ -167,7 +167,7 @@ module.exports = {
         image.dispose = function () {
         }
 
-        const gif = getImageType(data) === ImageType.GIF
+        const gif = getImageType(data) === "GIF"
       //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
 
