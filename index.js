@@ -76,13 +76,16 @@ app.use(function (req, res, next) {
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-let cache = {}; //todo use proper database lmao
+let cache = []; //todo use proper database lmao
 cache.get = async function (key) {
     return this[key];
 }
 cache.set = function (key, value) {
     this[key] = value;
 }
+//sanity check
+cache.get("yes");
+cache.set("yes", "yes");
 if (process.env.REDIS_URL_CRED) {
     try {
         const redis = require('redis');
@@ -99,7 +102,7 @@ if (process.env.REDIS_URL_CRED) {
 
             await client.set('key', 'value');
             const value = await client.get('key');
-            cache = {}
+            cache = []
             cache.get = async function (key) {
                 return await client.get(key)
             }
