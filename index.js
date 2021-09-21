@@ -17,7 +17,7 @@ const isLinux = process.platform === "linux";
 const cacheDir = __dirname + "/pics";
 try {
     fs.mkdirSync(cacheDir);
-} catch (e) {}
+} catch (e) { }
 let haveAVX = true;
 let cpuinfo = "None";
 if (isLinux) {
@@ -38,9 +38,9 @@ if (haveAVX) {
     nsfwModel.init().then(() => {
         cache = [];
     });
-}else {
+} else {
     nsfwModel.digest = async function () {
-        return {stub: "very stub"}
+        return { stub: "very stub" }
     }
 }
 const jsonParser = bodyParser.json();
@@ -56,7 +56,7 @@ app.head("/", (request, response) => {
 });
 // make all the files in 'public' available
 app.use(express.static("public"));
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     if (!process.env.NODE_NSFW_KEY) {
         next();
     } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
@@ -76,17 +76,54 @@ app.use(function(req, res, next) {
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-let cache = []; //todo use proper database lmao
+let cache = {}; //todo use proper database lmao
+cache.get = async function (key) {
+    return this[key];
+}
+cache.set = function (key, value) {
+    this[key] = value;
+}
+if (process.env.REDIS_URL_CRED) {
+    try {
+        import { createClient } from 'redis';
+        (async () => {
+            const client = createClient({
+                socket: {
+                    url: process.env.RED
+                }
+            });
+
+            client.on('error', (err) => console.log('Redis Client Error', err));
+
+            await client.connect();
+
+            await client.set('key', 'value');
+            const value = await client.get('key');
+            cache = {}
+            cache.get = async function (key) {
+                return await client.get(key)
+            }
+            cache.set = function (key, value) {
+                client.set(key, value).err(e => console.log("Redis Error:", e))
+            }
+        })();
+    } catch (e) {
+        console.log("Failed to import redis:", e)
+    }
+
+} else {
+    console.log("No REDIS_URL_CRED in environment")
+}
 let discordVideo = [".gif", ".mp4", ".webm"];
 
 async function classify(url, req, res) {
     console.log(req.url + ":" + url);
     const hash = url;
     try {
-        if (!cache[hash]) {
-            cache[hash] = await nsfwModel.classify(url);
+        if (!(await cache.get(hash))) {
+            cache.set(hash, await nsfwModel.classify(url));
         }
-        res.json(cache[hash]);
+        res.json(await cache.get(hash));
     } catch (err) {
         res.status(500);
         res.send("wtf");
@@ -103,9 +140,9 @@ app.get("/api/json/graphical", (req, res) => {
 });
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body.toString("hex");
-    if (!!cache[key]) {
-        res.set(cache[key])
-        res.json(cache[key]).status(200);
+    if (!!(await cache.get(key))) {
+        //res.set(cache.get(key))
+        res.json(await cache.get(key)]).status(200);
         return res.end()
     }
     res.send("nope: " + key).status(404);
@@ -122,15 +159,15 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     const sha256 = crypto.createHash('sha256');
     sha256.update(req.body);
     const hex = sha256.digest("hex").toString();
-    if (!!cache[hex]) {
-        return res.json(cache[hex]).status(200);
+    if (!!(await cache.get(hex))) {
+        return res.json(await cache.get(hex)).status(200);
     }
-    if(process.env.CACHE_IMAGE_HASH_FILE)
-    fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex+".webm")), req.body, {
-        flag: 'w'
-    });
+    if (process.env.CACHE_IMAGE_HASH_FILE)
+        fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex + ".webm")), req.body, {
+            flag: 'w'
+        });
     const dig = await nsfwModel.digest(req.body);
-    cache[hex] = dig; //regardless
+    cache.set(key, dig); //regardless
     res.set(dig);
     if (!dig.error) {
         res.json(dig).status(201);
@@ -184,7 +221,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     await classify(url, req, res);
 });
 
-app.get("*", function(req, res) {
+app.get("*", function (req, res) {
     res.status(404);
 
     // respond with json
@@ -218,7 +255,7 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
         }
         const httpsServer = https.createServer(credentials, app);
-        httpsServer.listen( httpsPort, () => {
+        httpsServer.listen(httpsPort, () => {
             console.log("Https server listing on port : " + httpsPort)
         });
     } catch (e) {
