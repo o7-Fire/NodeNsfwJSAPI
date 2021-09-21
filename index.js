@@ -85,9 +85,9 @@ cache.set = function (key, value) {
 }
 if (process.env.REDIS_URL_CRED) {
     try {
-        import { createClient } from 'redis';
+        const redis = require('redis');
         (async () => {
-            const client = createClient({
+            const client = redis.createClient({
                 socket: {
                     url: process.env.RED
                 }
