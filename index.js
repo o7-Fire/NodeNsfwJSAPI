@@ -142,7 +142,7 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
     const key = req.body.toString("hex");
     if (!!(await cache.get(key))) {
         //res.set(cache.get(key))
-        res.json(await cache.get(key)]).status(200);
+        res.json(await cache.get(key)).status(200);
         return res.end()
     }
     res.send("nope: " + key).status(404);
