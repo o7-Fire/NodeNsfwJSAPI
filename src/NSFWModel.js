@@ -1,17 +1,44 @@
 // you can use any other http client
 
-const axios = require("axios");
-const tf = require("@tensorflow/tfjs-node");
-const nsfw = require("nsfwjs");
-const jpeg = require("jpeg-js");
+let haveAVX = true;
+let cpuinfo = "None";
+const fs = require('fs');
+const isLinux = process.platform === "linux";
+let err = undefined;
+if (isLinux) {
+    cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
+    haveAVX = cpuinfo.includes("avx");
+}
 
-tf.enableProdMode(); // enable on production
+if (!haveAVX) {
+    console.error(cpuinfo);
+    console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line");
+    err = new Error("No AVX instruction set");
+    //throw err;
+}
+const axios = require("axios")
+const jpeg = require("jpeg-js");
+let tf, nsfw = {};
+if(haveAVX) {
+
+    tf = require("@tensorflow/tfjs-node");
+    nsfw = require("nsfwjs");
+    tf.enableProdMode(); // enable on production
+}else {
+    nsfw.load = async function (){
+        throw err;
+    }
+    nsfw.classify = async function (){
+        throw err;
+    }
+}
 
 let model;
 let currentModel = {
     url: "Default",
     size: "Default"
 };
+//GIF classifier is computationally expensive, disabled by default
 const supportGIF = process.env.SUPPORT_GIF_CLASSIFICATION
 if (supportGIF)
     console.log("SUPPORT_GIF_CLASSIFICATION")
@@ -138,6 +165,7 @@ function getImageType(content) {
 module.exports = {
     report: report,
     init: async function () {
+
         const model_url = process.env.NSFW_MODEL_URL;
         const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
@@ -145,6 +173,7 @@ module.exports = {
         if (!model) {
             try {
                 //model_url, { size: parseInt(shape_size) }
+
                 if (!model_url || !shape_size) model = await nsfw.load();
                 else {
                     model = {};
@@ -159,7 +188,9 @@ module.exports = {
             }
         }
     },
+    //must not throw error
     digest: async function (data) {
+        if(err)return {error: err}
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
         let reportPrediction = {};
@@ -168,7 +199,7 @@ module.exports = {
         }
 
         const gif = getImageType(data) === "GIF"
-      //if gif return 4D else 3D
+        //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
 
         if (gif) {

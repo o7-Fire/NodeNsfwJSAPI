@@ -6,7 +6,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const Path = require("path");
 const Fs = require("fs");
-
+const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
     "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
@@ -18,6 +18,11 @@ fileTest ["pics/drawing.png"] = "https://nsfw-demo.sashido.io/drawing.png";
 fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
 Fs.mkdirSync(Path.resolve(__dirname, 'pics'), {recursive: true})
+
+function exit(){
+    if(ignoreError)return;
+    process.exit(1)
+}
 
 async function downloadFile(fileUrl, outputLocationPath) {
     console.log("Downloading: " + fileUrl + ", to: " + outputLocationPath)
@@ -70,9 +75,9 @@ async function test5() {
             if(hashRes.status !== 200) {
                 throw new Error("Uncached: " + file)
             }
-        } catch (error) {
+        } catch (error) {exit();
             console.error(error);
-            process.exit(1);
+            exit();
         }
     }
 
@@ -88,7 +93,7 @@ async function test4() {
         test5();
     } catch (error) {
         console.error(error);
-        process.exit(1);
+        exit();
     }
 }
 
@@ -104,7 +109,7 @@ async function test3() {
         test4();
     } catch (error) {
         console.error(error);
-        process.exit(1);
+        exit();
     }
 }
 
@@ -124,7 +129,7 @@ async function test2() {
             console.log(data.model.url);
         } catch (error) {
             console.error(error);
-            process.exit(1);
+            exit();
         }
         //cache in action
         try {
@@ -133,7 +138,7 @@ async function test2() {
             console.log(data.model.url);
         } catch (error) {
             console.error(error);
-            process.exit(1);
+            exit();
         }
     }
     test3();
@@ -152,7 +157,7 @@ async function test1() {
         test2();
     } catch (error) {
         console.error(error);
-        process.exit(1);
+        exit();
     }
 }
 

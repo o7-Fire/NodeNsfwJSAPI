@@ -13,40 +13,37 @@ const crypto = require('crypto');
 const Path = require("path");
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
-const isLinux = process.platform === "linux";
+
 const cacheDir = __dirname + "/pics";
 try {
     fs.mkdirSync(cacheDir);
-} catch (e) { }
-let haveAVX = true;
-let cpuinfo = "None";
-if (isLinux) {
-    cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
-    haveAVX = cpuinfo.includes("avx");
+} catch (e) {
 }
 
-if (!haveAVX) {
-    console.log(cpuinfo);
-    console.log("AVX instruction set not detected, if you believe it is a mistake please delete this line");
-    const err = new Error("No AVX");
-    //throw err;
+const nsfwModel = require("./src/NSFWModel");
+const hashCache = {};
+hashCache.get = async function (key) {
+    return this[key];
 }
-
-let nsfwModel = {}
-if (haveAVX) {
-    nsfwModel = require("./src/NSFWModel");
-    nsfwModel.init().then(() => {
-        cache = [];
-    });
-} else {
-    nsfwModel.digest = async function () {
-        return { stub: "very stub" }
+hashCache.set = function (key, value) {
+    this[key] = value;
+}
+hashCache.clear = function () {
+    // for enumerable properties of shallow/plain object
+    for (const key in this) {
+        // this check can be safely omitted in modern JS engines
+        // if (obj.hasOwnProperty(key))
+        if (typeof this[key] === "function") continue;//don't delete my function
+        delete this[key];
     }
 }
-const jsonParser = bodyParser.json();
-const urlencodedParser = bodyParser.urlencoded({
-    extended: true
-})
+
+
+nsfwModel.init().then(() => {
+    hashCache.clear();
+});
+
+
 const rawParser = bodyParser.raw({
     type: '*/*',
     limit: '8mb'
@@ -76,23 +73,21 @@ app.use(function (req, res, next) {
 app.get("/", (request, response) => {
     response.sendFile(__dirname + "/views/index.html");
 });
-const cache = {}; //todo use proper database lmao
-cache.get = async function (key) {
-    return this[key];
-}
-cache.set = function (key, value) {
-    this[key] = value;
-}
+
 //sanity check
-cache.get("yes");
-cache.set("yes", "yes");
-if (process.env.REDIS_URL_CRED) {
-    try {
-        const redis = require('redis');
-        (async () => {
+hashCache.get("yes");
+hashCache.set("yes", "yes");
+
+//format "redis[s]://[[username][:password]@][host][:port][/db-number]", e.g 'redis://alice:foobared@awesome.redis.server:6380'
+if (process.env.REDIS_URL) {
+
+
+    (async () => {
+        try {
+            const redis = require('redis');
             const client = redis.createClient({
                 socket: {
-                    url: process.env.RED
+                    url: process.env.REDIS_URL
                 }
             });
 
@@ -103,19 +98,53 @@ if (process.env.REDIS_URL_CRED) {
             await client.set('key', 'value');
             const value = await client.get('key');
 
-            cache.get = async function (key) {
-                return await client.get(key)
+            hashCache.get = async function (key) {
+                let h = await this.get(key);
+                if(h === undefined) h = await client.get(key);
+                if(h === null) h = undefined;
+                return h;
             }
-            cache.set = function (key, value) {
-                client.set(key, value).err(e => console.log("Redis Error:", e))
+            hashCache.set = function (key, value) {
+                this.set(key, value);
+                client.set(key, value).catch(e => console.log("Redis Error:", e))
             }
-        })();
-    } catch (e) {
-        console.log("Failed to import redis:", e)
-    }
+            console.log("Using redis")
+        } catch (e) {
+            console.error("Failed to use redis:", e.toString())
+        }
+    })();
 
+}else if(process.env.MEMCACHED_HOST){
+    (async () => {
+        try {
+            const memjs = require('memjs');
+            if (!process.env.MEMCACHED_USERNAME || !process.env.MEMCACHED_PASSWORD) {
+                console.log("MEMCACHED USERNAME or PASSWORD is empty")
+            }
+            const mc = memjs.Client.create(process.env.MEMCACHED_HOST, {
+                username: process.env.MEMCACHED_USERNAME,
+                password: process.env.MEMCACHED_PASSWORD
+            });
+
+            await mc.set('key', 'value');
+            await mc.get('key');
+            hashCache.get = async function (key) {
+                let h = await this.get(key);
+                if(h === undefined) h = await mc.get(key);
+                if(h === null) h = undefined;
+                return h;
+            }
+            hashCache.set = function (key, value) {
+                this.set(key, value);
+                mc.set(key, value).catch(e => console.log("Memcached Error:", e))
+            }
+            console.log("Using Memcached")
+        }catch (e){
+            console.error("Failed to use Memcached:", e.toString())
+        }
+    })();
 } else {
-    console.log("No REDIS_URL_CRED in environment")
+    console.log("No REDIS_URL or MEMCACHED_HOST in environment, using default caching")
 }
 let discordVideo = [".gif", ".mp4", ".webm"];
 
@@ -123,32 +152,40 @@ async function classify(url, req, res) {
     console.log(req.url + ":" + url);
     const hash = url;
     try {
-        if (!(await cache.get(hash))) {
-            cache.set(hash, await nsfwModel.classify(url));
+        if (!(await hashCache.get(hash))) {
+            hashCache.set(hash, await nsfwModel.classify(url));
         }
-        res.json(await cache.get(hash));
+        res.json(await hashCache.get(hash));
     } catch (err) {
         res.status(500);
         res.send("wtf");
         console.log(err);
     }
 }
+
 app.get("/api/json/test", (req, res) => {
-    s = {}
+    let s = {}
     s.yes = "yes";
     res.json(s);
 });
 app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);
 });
+app.get("/api/json/graphical/classification/hash", (req, res) =>{
+   res.send("Send blob of hashed image using SHA-256 to get cached response, return 404 if not found")
+});
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body.toString("hex");
-    if (!!(await cache.get(key))) {
+    if (!!(await hashCache.get(key))) {
         //res.set(cache.get(key))
-        res.json(await cache.get(key)).status(200);
+        const res = await hashCache.get(key);
+        res.hex = key;
+        res.json(res).status(200);
         return res.end()
     }
-    res.send("nope: " + key).status(404);
+
+
+    res.json({hex: key}).status(404);
     res.end()
 })
 
@@ -162,15 +199,15 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     const sha256 = crypto.createHash('sha256');
     sha256.update(req.body);
     const hex = sha256.digest("hex").toString();
-    if (!!(await cache.get(hex))) {
-        return res.json(await cache.get(hex)).status(200);
+    if (!!(await hashCache.get(hex))) {
+        return res.json(await hashCache.get(hex)).status(200);
     }
     if (process.env.CACHE_IMAGE_HASH_FILE)
         fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex + ".webm")), req.body, {
             flag: 'w'
         });
     const dig = await nsfwModel.digest(req.body);
-    cache.set(key, dig); //regardless
+    hashCache.set(hex, dig); //regardless
     res.set(dig);
     if (!dig.error) {
         res.json(dig).status(201);
@@ -187,7 +224,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     let body = {};
     let allowed = true;
     body.error = "Not allowed/Discord media only or ended with media extension";
-    code = 406;
+    let code = 406;
     if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
         for (const ext of discordVideo) {
             if (url.endsWith(ext)) {
@@ -210,7 +247,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
         if (
             !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
         ) {
-            stat = 415;
+            code = 415;
             body.error = "Only allow https://cdn.discordapp.com/ or png, jpeg, bmg, jpg, gif";
             allowed = false;
         }
@@ -218,7 +255,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     }
 
     if (!allowed) {
-        res.status(stat).json(body);
+        res.status(code).json(body);
         return;
     }
     await classify(url, req, res);
@@ -247,6 +284,7 @@ const listener = app.listen(process.env.PORT || 5656, () => {
 const httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => {
     console.log("Http server listing on port : " + httpPort)
+    console.log("http://localhost:"+httpPort)
 });
 if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
     try {
@@ -260,6 +298,7 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {
             console.log("Https server listing on port : " + httpsPort)
+            console.log("https://localhost:"+httpsPort)
         });
     } catch (e) {
         console.log("Can't start Https server");
