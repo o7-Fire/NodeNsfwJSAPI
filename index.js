@@ -136,13 +136,27 @@ if (process.env.REDIS_URL) {
                 set: hashCache.set
             };
             hashCache.get = async function (key) {
-                let h = await local.get(key);
-                if(h === undefined) h = await mc.get(key);
-                if(h === null) h = undefined;
-                return h;
+                let value = await local.get(key);
+                if(!value) {
+                    try {
+                        value = await mc.get(key).value;
+                    }catch (e){}
+                    if(value === null) value = undefined;
+                    if(value){
+                        value = value.toString();
+                        try{
+                            value = JSON.parse(value);
+                        }catch (e){}
+                    }
+                }
+
+                return value;
             }
             hashCache.set = function (key, value) {
                 local.set(key, value);
+                try {
+                    value = JSON.stringify(value)
+                }catch (e){}
                 mc.set(key, value).catch(e => console.log("Memcached Error:", e))
             }
             console.log("Using Memcached")
