@@ -178,9 +178,9 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
     const key = req.body.toString("hex");
     if (!!(await hashCache.get(key))) {
         //res.set(cache.get(key))
-        const res = await hashCache.get(key);
-        res.hex = key;
-        res.json(res).status(200);
+        const cache = await hashCache.get(key);
+        cache.hex = key;
+        res.json(cache).status(200);
         return res.end()
     }
 
