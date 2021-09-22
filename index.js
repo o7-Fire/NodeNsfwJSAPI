@@ -97,15 +97,18 @@ if (process.env.REDIS_URL) {
 
             await client.set('key', 'value');
             const value = await client.get('key');
-
+            const local = {
+                get: hashCache.get,
+                set: hashCache.set
+            };
             hashCache.get = async function (key) {
-                let h = await this.get(key);
+                let h = await local.get(key);
                 if(h === undefined) h = await client.get(key);
                 if(h === null) h = undefined;
                 return h;
             }
             hashCache.set = function (key, value) {
-                this.set(key, value);
+                local.set(key, value);
                 client.set(key, value).catch(e => console.log("Redis Error:", e))
             }
             console.log("Using redis")
