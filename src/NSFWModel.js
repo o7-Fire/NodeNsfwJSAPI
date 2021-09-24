@@ -13,7 +13,7 @@ if (isLinux) {
 if (!haveAVX) {
     console.error(cpuinfo);
     console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line");
-    err = new Error("No AVX instruction set");
+    err = new Error("No AVX instruction set");//comment this to work
     //throw err;
 }
 const axios = require("axios")
