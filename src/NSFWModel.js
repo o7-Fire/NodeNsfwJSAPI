@@ -228,7 +228,7 @@ module.exports = {
             return result;
         }
         try {
-            result = this.digest(pic.data);
+            result = await this.digest(pic.data);
         } catch (err) {
             console.error("Prediction Error: ", err);
             result.error = err.toString();
