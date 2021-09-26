@@ -190,7 +190,7 @@ module.exports = {
     },
     //must not throw error
     digest: async function (data) {
-        if(err)return {error: err, status: 500}
+        if(err)return {error: err.toString(), status: 500}
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
         let reportPrediction = {};
@@ -201,7 +201,7 @@ module.exports = {
         try {
             gif = getImageType(data) === "GIF"
         }catch (e){
-            return {error: e, status: 415}
+            return {error: e.toString(), status: 415}
         }
         //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
@@ -229,7 +229,7 @@ module.exports = {
         } catch (err) {
             console.error("Download Image Error:", err);
             result.error = err.toString();
-            result.status = 404;
+            result.status = 406;
             return result;
         }
         try {
