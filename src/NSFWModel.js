@@ -189,6 +189,7 @@ module.exports = {
         }
     },
     //must not throw error
+    //so anyway i start throwing error
     digest: async function (data) {
         if(err)return {error: err.toString(), status: 500}
         // Image must be in tf.tensor3d format

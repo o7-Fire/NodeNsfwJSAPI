@@ -216,7 +216,7 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
 
 
 app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
-    if (req.body.length < 8) {
+    if (req.body.length < 8) {//tampered ??????
         return res.json({
             error: "less than 8 byte, sus"
         }).status(406);
@@ -231,15 +231,22 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
         fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex + ".webm")), req.body, {
             flag: 'w'
         });
-    const dig = await nsfwModel.digest(req.body);
+    let dig = {error: "not found", status: 404}
+    try {
+        dig = await nsfwModel.digest(req.body);
+    }catch (e){
+        dig.error = e.toString()
+        dig.status = 500
+    }
     hashCache.set(hex, dig); //regardless
-    res.set(dig);
+    //res.set(dig);
+
     if (!dig.error) {
         res.json(dig).status(201);
         return res.end()
     }
     console.log("Error Processing, Hash: " + hex);
-    res.json(dig).status(406);
+    res.json(dig).status(dig.status);
     res.end()
 })
 
