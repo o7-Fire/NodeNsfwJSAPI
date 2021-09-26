@@ -13,7 +13,7 @@ if (isLinux) {
 if (!haveAVX) {
     console.error(cpuinfo);
     console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line");
-    err = new Error("No AVX instruction set");//comment this to work
+    err = new Error("Server don't have AVX instruction set");//comment this to work
     //throw err;
 }
 const axios = require("axios")
@@ -190,15 +190,19 @@ module.exports = {
     },
     //must not throw error
     digest: async function (data) {
-        if(err)return {error: err}
+        if(err)return {error: err, status: 500}
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
         let reportPrediction = {};
         let image = {};
         image.dispose = function () {
         }
-
-        const gif = getImageType(data) === "GIF"
+        let gif = false;
+        try {
+            gif = getImageType(data) === "GIF"
+        }catch (e){
+            return {error: e, status: 415}
+        }
         //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
 
@@ -224,7 +228,8 @@ module.exports = {
             });
         } catch (err) {
             console.error("Download Image Error:", err);
-            result.error = err;
+            result.error = err.toString();
+            result.status = 404;
             return result;
         }
         try {
@@ -232,7 +237,7 @@ module.exports = {
         } catch (err) {
             console.error("Prediction Error: ", err);
             result.error = err.toString();
-            return result;
+            result.status = 500;
         }
 
         return result;

@@ -176,10 +176,14 @@ async function classify(url, req, res) {
         if (!(await hashCache.get(hash))) {
             hashCache.set(hash, await nsfwModel.classify(url));
         }
-        res.json(await hashCache.get(hash));
+        const yikes = await hashCache.get(hash);
+        if(yikes.status){
+            res.status(yikes.status)
+        }
+        res.json(yikes);
     } catch (err) {
         res.status(500);
-        res.send("wtf");
+        res.json({error: "Internal Error"});
         console.log(err);
     }
 }
