@@ -251,8 +251,10 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
 })
 
 app.get("/api/json/graphical/classification/*", async (req, res) => {
-    let url = req.url.replace("/api/json/graphical/classification/", "");
-    if (!url) return;
+    let url = req.url.substr("/api/json/graphical/classification/".length);
+    if (!url) {
+        return res.status(400).json({error: "expected an url but got emptiness", status: 400});
+    }
     let body = {};
     let allowed = true;
     body.error = "Not allowed/Discord media only or ended with media extension";
@@ -287,6 +289,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     }
 
     if (!allowed) {
+        body.status = code;
         res.status(code).json(body);
         return;
     }
