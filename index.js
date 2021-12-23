@@ -325,8 +325,8 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
     try {
 
         const credentials = {};
-        credentials.cert = fs.readFileSync(__dirname + '/certsFiles/private.key');
-        credentials.key = fs.readFileSync(__dirname + '/certsFiles/certificate.crt');
+        credentials.cert = fs.readFileSync(__dirname + '/certsFiles/certificate.pem');
+        credentials.key = fs.readFileSync(__dirname + '/certsFiles/private.pem');
         if (fs.existsSync(__dirname + '/certsFiles/ca_bundle.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
         }

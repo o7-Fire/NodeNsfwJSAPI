@@ -22,9 +22,6 @@
     "redis": "^4.0.0-rc.1",
     "seedrandom": "^2.4.4"
   },
-  "engines": {
-    "node": "12.x"
-  },
   "repository": {
     "url": "https://glitch.com/edit/#!/hello-express"
   },
