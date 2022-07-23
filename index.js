@@ -11,6 +11,8 @@ const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
 const Path = require("path");
+const dotenv = require("dotenv")
+dotenv.config()
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
 
