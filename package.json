@@ -21,6 +21,7 @@
     "nsfwjs": "^2.3.0",
     "redis": "^4.0.0-rc.1",
     "seedrandom": "^2.4.4"
+    "dotenv": "^16.0.1"
   },
   "repository": {
     "url": "https://glitch.com/edit/#!/hello-express"
