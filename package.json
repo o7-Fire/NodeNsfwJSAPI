@@ -19,7 +19,7 @@
     "jpeg-js": "^0.4.3",
     "memjs": "^1.3.0",
     "nsfwjs": "^2.3.0",
-    "redis": "^4.0.0-rc.1",
+    "redis": "^4.2.0",
     "seedrandom": "^2.4.4"
   },
   "repository": {
