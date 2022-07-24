@@ -19,5 +19,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
+          context: .
+          platform: linux/amd64, linux/arm64
           push: true
-          tags: { { .GitHub.Owner } }/{{ .GitHub.Repository }}:{{ .GitHub.Ref }}
+          tags: ghcr.io/{{ .GitHub.Owner }}/{{ .GitHub.Repository }}:{{ .GitHub.Ref }}
