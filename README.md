@@ -7,7 +7,11 @@
 - mkdir certsFiles && cd certsFiles
 - sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./selfsigned.key -out selfsigned.crt
 
-or just use certbot 
+or just use certbot (if you selfhost it)
+
+- sudo apt install -y certbot
+- certbot certonly --standalone -d yourdomain.com #need to have port 80 open and run as sudo if not root already
+- add CERTBOT=true on .env
 
 ### TODO
 - Process external gif
@@ -57,7 +61,7 @@ or just use certbot
 - response
 - ![](https://cdn.discordapp.com/attachments/840041811384860708/872872718897385582/unknown.png)
 - after processing and some cahce (pi 4 B)
-- ![](https://media.discordapp.net/attachments/840041811384860709/872868502103535626/unknown.png)
+- ![](https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png)
 
 ### Misc
 
@@ -65,4 +69,4 @@ Adopted from:
 https://github.com/SashiDo/content-moderation-image-api, https://github.com/infinitered/nsfwjs
 
 Preview: 
-https://unproxiedforsonar.o7fire.ml:5657/
+https://api.yeet.ml

@@ -11,6 +11,8 @@ const http = require('http');
 const https = require('https');
 const crypto = require('crypto');
 const Path = require("path");
+const dotenv = require("dotenv")
+dotenv.config()
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
 
@@ -329,6 +331,10 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
         credentials.key = fs.readFileSync(__dirname + '/certsFiles/private.pem');
         if (fs.existsSync(__dirname + '/certsFiles/ca_bundle.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
+        }
+        if (process.env.CERTBOT) {
+            credentials.cert = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/fullchain.pem");
+            credentials.key = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/privkey.pem");
         }
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {

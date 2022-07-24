@@ -15,7 +15,7 @@ RUN groupadd -r ${USER} && \
 USER ${USER}
 WORKDIR /home/mossad
 RUN mkdir ./certsFiles/
-RUN cd ./certsFiles/ && openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./selfsigned.key -out selfsigned.crt
+RUN cd ./certsFiles/ && openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ./selfsigned.key -out selfsigned.crt
 COPY package*.json ./
 RUN npm install
 VOLUME [ "/home/mossad" ]
