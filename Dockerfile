@@ -1,4 +1,4 @@
-FROM node:12.19-slim
+FROM node:16-bullseye-slim
 
 ENV USER=mossad
 
