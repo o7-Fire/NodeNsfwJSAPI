@@ -359,19 +359,47 @@ httpServer.listen(httpPort, () => {
     console.log("Http server listing on port : " + httpPort)
     console.log("http://localhost:" + httpPort)
 });
-if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
+let certsFolder = process.env.CERT_PATH || process.cwd() + '/certsFiles/';
+//end with /
+if (!certsFolder.endsWith('/')) {
+    certsFolder = certsFolder + '/';
+}
+if (fs.existsSync(certsFolder)) {
     try {
 
         const credentials = {};
-        credentials.cert = fs.readFileSync(__dirname + '/certsFiles/certificate.pem');
-        credentials.key = fs.readFileSync(__dirname + '/certsFiles/private.pem');
-        if (fs.existsSync(__dirname + '/certsFiles/ca_bundle.crt')) {
-            credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
+        const certFilesName = ['certificate.crt', 'fullchain.pem'];
+        const keyFilesName = ['key.key', 'privkey.pem', 'private.key', 'privatekey.pem'];
+        const caFilesName = ['ca.crt', 'chain.pem', 'chain.cert.pem'];
+        for (const certFileName of certFilesName) {
+            if (fs.existsSync(certsFolder + certFileName)) {
+                credentials.cert = fs.readFileSync(certsFolder + certFileName);
+                console.log('cert file found : ' + certsFolder + certFileName);
+                break;
+            }
         }
-        if (process.env.CERTBOT) {
-            var hostname = process.env.HOSTNAME;
-            credentials.cert = fs.readFileSync(`/etc/letsencrypt/live/${hostname}/fullchain.pem`);
-            credentials.key = fs.readFileSync(`/etc/letsencrypt/live/${hostname}/privkey.pem`);
+        if (!credentials.cert) {
+            console.error('cert file not found in : ' + certsFolder);
+        }
+        for (const keyFileName of keyFilesName) {
+            if (fs.existsSync(certsFolder + keyFileName)) {
+                credentials.key = fs.readFileSync(certsFolder + keyFileName);
+                console.log('key file found : ' + certsFolder + keyFileName);
+                break;
+            }
+        }
+        if (!credentials.key) {
+            console.error('key file not found in : ' + certsFolder);
+        }
+        for (const caFileName of caFilesName) {
+            if (fs.existsSync(certsFolder + caFileName)) {
+                credentials.ca = fs.readFileSync(certsFolder + caFileName);
+                console.log('ca file found : ' + certsFolder + caFileName);
+                break;
+            }
+        }
+        if (!credentials.ca) {
+            console.log('ca file not found in : ' + certsFolder);
         }
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {
@@ -382,4 +410,6 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
         console.log("Can't start Https server");
         console.log(e);
     }
+} else {
+    console.log("Can't start Https server, certs folder not found");
 }
