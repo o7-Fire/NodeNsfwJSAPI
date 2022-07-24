@@ -267,7 +267,18 @@ module.exports = {
         }
         let pic;
         let result = {};
+        const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net").split(";");
+        const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
+        const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
         try {
+            const host = new URL(url).hostname;
+            if (blockedHost.includes(host)) {
+                return {error: "Host is blocked", status: 403}
+            }
+            if (!allowedAll && !allowedHost.includes(host)) {
+                console.error("Host not allowed: " + host);
+                return {error: "Host not allowed: " + host, status: 403};
+            }
             pic = await axios.get(url, {
                 responseType: "arraybuffer",
                 maxContentLength: 15e7

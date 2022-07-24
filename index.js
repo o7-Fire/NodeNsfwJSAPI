@@ -9,9 +9,7 @@ const fs = require('fs');
 const bodyParser = require("body-parser");
 const http = require('http');
 const https = require('https');
-
-const dotenv = require("dotenv")
-dotenv.config()
+require("dotenv").config();
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
 
