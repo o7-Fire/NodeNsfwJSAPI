@@ -9,25 +9,40 @@ const fs = require('fs');
 const bodyParser = require("body-parser");
 const http = require('http');
 const https = require('https');
-const crypto = require('crypto');
-const Path = require("path");
+
 const dotenv = require("dotenv")
 dotenv.config()
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
 
-const cacheDir = __dirname + "/pics";
-try {
-    fs.mkdirSync(cacheDir);
-} catch (e) {
-}
-
 const nsfwModel = require("./src/NSFWModel");
 const hashCache = {};
+const lastAccessed = {};
 hashCache.get = async function (key) {
-    return this[key];
+    const value = this[key];
+    if (value) {
+        lastAccessed[key] = Date.now();
+
+    }
+    return value;
 }
 hashCache.set = function (key, value) {
+    //check if size is too big
+    const maxSize = process.env.MAX_CACHE_SIZE || 100;
+    if (Math.random() < 0.1) {
+        const keys = Object.keys(this);
+        if (keys.length > maxSize) {
+            //don't delete the first 100 keys, sorted by how recently they were accessed
+            keys.sort((a, b) => lastAccessed[a] - lastAccessed[b]);
+            console.log("Clearing " + keys.length - maxSize + " local cache");
+            //format millis to date
+            console.log("Latest accessed key: " + new Date(lastAccessed[keys[keys.length - 1]]));
+            for (let i = 0; i < keys.length - maxSize; i++) {
+                delete this[keys[i]];
+            }
+            console.log("Local cache size: " + Object.keys(this).length);
+        }
+    }
     this[key] = value;
 }
 hashCache.clear = function () {
@@ -45,11 +60,12 @@ nsfwModel.init().then(() => {
     hashCache.clear();
 });
 
-
+nsfwModel.setCaching(hashCache);
 const rawParser = bodyParser.raw({
     type: '*/*',
     limit: '8mb'
 });
+//what is this
 app.head("/", (request, response) => {
     response.status(200);
 });
@@ -81,74 +97,87 @@ hashCache.get("yes");
 hashCache.set("yes", "yes");
 
 //format "redis[s]://[[username][:password]@][host][:port][/db-number]", e.g 'redis://alice:foobared@awesome.redis.server:6380'
-if (process.env.REDIS_URL) {
-
-
+if (process.env.REDIS_URL || process.env.REDIS_HOST) {
     (async () => {
         try {
-            const redis = require('redis');
-            const client = redis.createClient({
-                socket: {
-                    url: process.env.REDIS_URL
-                }
-            });
-
+            const Redis = require('ioredis');
+            let client;
+            if (process.env.REDIS_URL) {
+                client = new Redis(process.env.REDIS_URL);
+            } else {
+                client = new Redis({
+                    host: process.env.REDIS_HOST,
+                    port: process.env.REDIS_PORT || 6379,
+                    password: process.env.REDIS_PASSWORD || null,
+                    db: process.env.REDIS_DB || 0
+                });
+            }
             client.on('error', (err) => console.log('Redis Client Error', err));
-
-            await client.connect();
-
             await client.set('key', 'value');
-            const value = await client.get('key');
+            let value = await client.get('key');
+            await client.del('key');
+
             const local = {
                 get: hashCache.get,
                 set: hashCache.set
             };
             hashCache.get = async function (key) {
                 let h = await local.get(key);
-                if(h === undefined) h = await client.get(key);
-                if(h === null) h = undefined;
+                //if not exists, try redis
+                if (typeof h !== "object") h = await client.get(key);
+                //if string
+                if (h && typeof h === "string") h = JSON.parse(h);
                 return h;
             }
             hashCache.set = function (key, value) {
                 local.set(key, value);
+                //serialize value to string
+                value = JSON.stringify(value);
                 client.set(key, value).catch(e => console.log("Redis Error:", e))
             }
+            await hashCache.set("json", {"test": "test"});
+            value = await hashCache.get("json");
+            if (value.test !== "test") throw new Error("Redis failed");
             console.log("Using redis")
+            nsfwModel.setCaching(hashCache);
         } catch (e) {
             console.error("Failed to use redis:", e.toString())
         }
     })();
 
-}else if(process.env.MEMCACHED_HOST){
+} else if (process.env.MEMCACHED_HOST) {
     (async () => {
         try {
             const memjs = require('memjs');
             if (!process.env.MEMCACHED_USERNAME || !process.env.MEMCACHED_PASSWORD) {
                 console.log("MEMCACHED USERNAME or PASSWORD is empty")
             }
-            const mc = memjs.Client.create(process.env.MEMCACHED_HOST, {
+            const mc = memjs.Client.create(process.env.MEMCACHED_HOST + ":" + (process.env.MEMCACHED_PORT || 11211), {
                 username: process.env.MEMCACHED_USERNAME,
                 password: process.env.MEMCACHED_PASSWORD
             });
 
             await mc.set('key', 'value');
             await mc.get('key');
+            await mc.del('key');
             const local = {
                 get: hashCache.get,
                 set: hashCache.set
             };
             hashCache.get = async function (key) {
                 let value = await local.get(key);
-                if(!value) {
+                if (!value) {
                     try {
                         value = await mc.get(key).value;
-                    }catch (e){}
-                    if(value === null) value = undefined;
-                    if(value){
+                    } catch (e) {
+                    }
+                    if (value === null) value = undefined;
+                    if (value) {
                         value = value.toString();
-                        try{
+                        try {
                             value = JSON.parse(value);
-                        }catch (e){}
+                        } catch (e) {
+                        }
                     }
                 }
 
@@ -158,11 +187,16 @@ if (process.env.REDIS_URL) {
                 local.set(key, value);
                 try {
                     value = JSON.stringify(value)
-                }catch (e){}
+                } catch (e) {
+                }
                 mc.set(key, value).catch(e => console.log("Memcached Error:", e))
             }
+            await hashCache.set("json", {"test": "test"});
+            let value = await hashCache.get("json");
+            if (value.test !== "test") throw new Error("Memcached failed");
             console.log("Using Memcached")
-        }catch (e){
+            nsfwModel.setCaching(hashCache);
+        } catch (e) {
             console.error("Failed to use Memcached:", e.toString())
         }
     })();
@@ -175,14 +209,11 @@ async function classify(url, req, res) {
     console.log(req.url + ":" + url);
     const hash = url;
     try {
-        if (!(await hashCache.get(hash))) {
-            hashCache.set(hash, await nsfwModel.classify(url));
+        let response = await nsfwModel.classify(url)
+        if (response.status) {
+            res.status(response.status)
         }
-        const yikes = await hashCache.get(hash);
-        if(yikes.status){
-            res.status(yikes.status)
-        }
-        res.json(yikes);
+        res.json(response);
     } catch (err) {
         res.status(500);
         res.json({error: "Internal Error"});
@@ -198,9 +229,10 @@ app.get("/api/json/test", (req, res) => {
 app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);
 });
-app.get("/api/json/graphical/classification/hash", (req, res) =>{
-   res.send("Send blob of hashed image using SHA-256 to get cached response, return 404 if not found")
+app.get("/api/json/graphical/classification/hash", (req, res) => {
+    res.send("Send blob/binary of hashed image using SHA-256 to get cached response, return 404 if not found, or /api/json/graphical/classification/hash/{sha256-hex} ")
 });
+
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body.toString("hex");
     if (!!(await hashCache.get(key))) {
@@ -210,12 +242,22 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
         res.json(cache).status(200);
         return res.end()
     }
-
-
     res.json({hex: key}).status(404);
     res.end()
 })
+app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
+    const key = req.params.hash;
+    if (!!(await hashCache.get(key))) {
+        //res.set(cache.get(key))
+        const cache = await hashCache.get(key);
+        cache.hex = key;
+        res.json(cache).status(200);
+        return res.end()
+    }
 
+    res.json({hex: key}).status(404);
+    res.end()
+});
 
 app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     if (req.body.length < 8) {//tampered ??????
@@ -223,37 +265,24 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
             error: "less than 8 byte, sus"
         }).status(406);
     }
-    const sha256 = crypto.createHash('sha256');
-    sha256.update(req.body);
-    const hex = sha256.digest("hex").toString();
-    if (!!(await hashCache.get(hex))) {
-        return res.json(await hashCache.get(hex)).status(200);
-    }
-    if (process.env.CACHE_IMAGE_HASH_FILE)
-        fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hex + ".webm")), req.body, {
-            flag: 'w'
-        });
+
     let dig = {error: "not found", status: 404}
     try {
         dig = await nsfwModel.digest(req.body);
-    }catch (e){
+    } catch (e) {
         dig.error = e.toString()
         dig.status = 500
     }
-    hashCache.set(hex, dig); //regardless
-    //res.set(dig);
-
     if (!dig.error) {
         res.json(dig).status(201);
         return res.end()
     }
-    console.log("Error Processing, Hash: " + hex);
     res.json(dig).status(dig.status);
     res.end()
 })
-
+const urlClassificationLength = "/api/json/graphical/classification/".length;
 app.get("/api/json/graphical/classification/*", async (req, res) => {
-    let url = req.url.substr("/api/json/graphical/classification/".length);
+    let url = req.url.substring(urlClassificationLength);
     if (!url) {
         return res.status(400).json({error: "expected an url but got emptiness", status: 400});
     }
@@ -261,7 +290,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     let allowed = true;
     body.error = "Not allowed/Discord media only or ended with media extension";
     let code = 406;
-    if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
+    if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {//trust discord
         for (const ext of discordVideo) {
             if (url.endsWith(ext)) {
                 allowed = false;
@@ -321,7 +350,7 @@ const listener = app.listen(process.env.PORT || 5656, () => {
 const httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => {
     console.log("Http server listing on port : " + httpPort)
-    console.log("http://localhost:"+httpPort)
+    console.log("http://localhost:" + httpPort)
 });
 if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
     try {
@@ -339,7 +368,7 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {
             console.log("Https server listing on port : " + httpsPort)
-            console.log("https://localhost:"+httpsPort)
+            console.log("https://localhost:" + httpsPort)
         });
     } catch (e) {
         console.log("Can't start Https server");
