@@ -1,6 +1,7 @@
 ## NSFW API Detection with nodejs
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/o7-Fire/NodeNsfwJSAPI)
+[![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
 
 ###  [Installation](https://github.com/o7-Fire/NodeNsfwJSAPI/wiki/Installation)
 
@@ -61,4 +62,4 @@ Adopted from:
 - https://github.com/infinitered/nsfwjs
 
 Preview: 
-https://api.yeet.ml
+https://nsfw-detector-o7.herokuapp.com/
