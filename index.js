@@ -178,7 +178,6 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
 
             await mc.set('key', 'value');
             await mc.get('key');
-            await mc.del('key');
             const local = {
                 get: hashCache.get,
                 set: hashCache.set
@@ -196,6 +195,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                         try {
                             value = JSON.parse(value);
                         } catch (e) {
+                            value = undefined;
                         }
                     }
                 }
