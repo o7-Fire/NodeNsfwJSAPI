@@ -259,6 +259,12 @@ app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
 });
 
 app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
+    //check if its actually a Buffer
+    if (!Buffer.isBuffer(req.body)) {
+        res.status(400);
+        res.json({error: "Invalid request"});
+        return res.end();
+    }
     if (req.body.length < 8) {//tampered ??????
         return res.json({
             error: "less than 8 byte, sus"
