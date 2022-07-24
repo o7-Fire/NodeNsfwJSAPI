@@ -19,8 +19,10 @@ RUN mkdir ./certsFiles/
 RUN touch ./certsFiles/selfsigned.key
 RUN touch ./certsFiles/selfsigned.crt 
 COPY package*.json ./
-USER node
-RUN npm install
+USER root
+RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
+    export PATH=~/.npm-global/bin:$PATH && \
+    cd /home/mossad && npm install
 VOLUME [ "/home/mossad" ]
 
 COPY . .
