@@ -17,7 +17,6 @@ if (!haveAVX) {
     //throw err;
 }
 const axios = require("axios")
-const jpeg = require("jpeg-js");
 const Path = require("path");
 const crypto = require('crypto');
 const cacheDir = process.cwd() + "/pics";
@@ -76,21 +75,6 @@ const report = {
         Porn: "Doujin18",
         Drawing: {n1: "R34"}
     }
-};
-//what this
-const convert = async img => {
-    // Decoded image in UInt8 Byte array
-    const image = await jpeg.decode(img, true);
-
-    const numChannels = 3;
-    const numPixels = image.width * image.height;
-    const values = new Int32Array(numPixels * numChannels);
-
-    for (let i = 0; i < numPixels; i++)
-        for (let c = 0; c < numChannels; ++c)
-            values[i * numChannels + c] = image.data[i * 4 + c];
-
-    return tf.tensor3d(values, [image.height, image.width, numChannels], "int32");
 };
 
 function assignReport(t1, t2, reportPrediction) {
