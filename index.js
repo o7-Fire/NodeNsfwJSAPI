@@ -88,8 +88,9 @@ app.use(function (req, res, next) {
         next();
     }
 });
+const indexHtml = fs.readFileSync(process.cwd() + "/views/index.html").toString();
 app.get("/", (request, response) => {
-    response.sendFile(__dirname + "/views/index.html");
+    response.send(indexHtml);
 });
 
 //sanity check
