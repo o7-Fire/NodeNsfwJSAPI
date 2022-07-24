@@ -177,6 +177,7 @@ async function test1() {
 async function prep() {
     await nsfwModel.init();
     console.log("Ready");
+    process.env.TEST_MODE = true;
     const assad = require("./index.js");
     test1();
 }

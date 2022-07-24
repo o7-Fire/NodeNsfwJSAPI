@@ -1,0 +1,365 @@
+{
+  "definitions": {},
+  "info": {
+    "title": "node-nsfw-detector-api",
+    "version": "0.0.1",
+    "license": {
+      "name": "MIT"
+    },
+    "description": "Specification JSONs: [v2](/api-spec/v2), [v3](/api-spec/v3).\n\nA simple Node app built on Express, instantly up and running."
+  },
+  "paths": {
+    "/": {
+      "head": {
+        "summary": "/",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/test": {
+      "get": {
+        "summary": "/api/v2/test",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/categories": {
+      "get": {
+        "summary": "/api/v2/categories",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/hosts": {
+      "get": {
+        "summary": "/api/v2/hosts",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/classification/hash": {
+      "post": {
+        "summary": "/api/v2/classification/hash",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/classification/hash/{hash}": {
+      "get": {
+        "summary": "/api/v2/classification/hash/{hash}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/classification": {
+      "post": {
+        "summary": "/api/v2/classification",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v2/classification/*": {
+      "get": {
+        "summary": "/api/v2/classification/*",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/json/test": {
+      "get": {
+        "summary": "/api/json/test",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "yes": {
+                  "type": "string",
+                  "example": "yes"
+                }
+              }
+            }
+          }
+        },
+        "tags": [],
+        "produces": [
+          "application/json"
+        ]
+      }
+    },
+    "/api/json/graphical": {
+      "get": {
+        "summary": "/api/json/graphical",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "Drawing": {
+                  "type": "object",
+                  "properties": {
+                    "Hentai": {
+                      "type": "string",
+                      "example": "Anime"
+                    },
+                    "Sexy": {
+                      "type": "string",
+                      "example": "ArtificialProvocative"
+                    },
+                    "Neutral": {
+                      "type": "string",
+                      "example": "DigitalDrawing"
+                    }
+                  }
+                },
+                "Neutral": {
+                  "type": "object",
+                  "properties": {
+                    "Drawing": {
+                      "type": "string",
+                      "example": "Digital"
+                    },
+                    "Sexy": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "NaturallyProvocative"
+                        }
+                      }
+                    },
+                    "Porn": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "Disturbing"
+                        }
+                      }
+                    },
+                    "Hentai": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "SeductiveArt"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Sexy": {
+                  "type": "object",
+                  "properties": {
+                    "Neutral": {
+                      "type": "string",
+                      "example": "SexuallyProvocative"
+                    },
+                    "Porn": {
+                      "type": "string",
+                      "example": "SeductivePorn"
+                    }
+                  }
+                },
+                "Porn": {
+                  "type": "object",
+                  "properties": {
+                    "Sexy": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "PornSeductive"
+                        }
+                      }
+                    },
+                    "Hentai": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "HentaiClips"
+                        }
+                      }
+                    },
+                    "Neutral": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "SoftPorn"
+                        }
+                      }
+                    }
+                  }
+                },
+                "Hentai": {
+                  "type": "object",
+                  "properties": {
+                    "Porn": {
+                      "type": "string",
+                      "example": "Doujin18"
+                    },
+                    "Drawing": {
+                      "type": "object",
+                      "properties": {
+                        "n1": {
+                          "type": "string",
+                          "example": "R34"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [],
+        "produces": [
+          "application/json"
+        ]
+      }
+    },
+    "/api/json/graphical/classification/hash": {
+      "get": {
+        "summary": "/api/json/graphical/classification/hash",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      },
+      "post": {
+        "summary": "/api/json/graphical/classification/hash",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/json/allowed/hosts": {
+      "get": {
+        "summary": "/api/json/allowed/hosts",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/json/graphical/classification/hash/{hash}": {
+      "get": {
+        "summary": "/api/json/graphical/classification/hash/{hash}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/json/graphical/classification": {
+      "post": {
+        "summary": "/api/json/graphical/classification",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/json/graphical/classification/*": {
+      "get": {
+        "summary": "/api/json/graphical/classification/*",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "*": {
+      "get": {
+        "summary": "*",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    }
+  },
+  "swagger": "2.0",
+  "tags": []
+}

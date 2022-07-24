@@ -1,0 +1,18 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Node NSFW JS API",
+    "description": "NSFW Classification API for images with Node.js",
+    "version": "1.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5656/"
+    },
+    {
+      "url": "https://nsfw-detector-o7.herokuapp.com/"
+    }
+  ],
+  "paths": {
+  }
+}

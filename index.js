@@ -4,7 +4,24 @@
 // we've started you off with Express (https://expressjs.com/)
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 const express = require("express");
+let expressOasGenerator;
+if (process.env.TEST_MODE) {
+    console.log("TEST MDOE");
+    expressOasGenerator = require('express-oas-generator');
+}
 const app = express();
+if (process.env.TEST_MODE) {
+    const SPEC_OUTPUT_FILE_BEHAVIOR = {
+        PRESERVE: 'PRESERVE',
+        RECREATE: 'RECREATE'
+    };
+    expressOasGenerator.handleResponses(app, {
+        specOutputPath: './src/generated.json',
+        alwaysServeDocs: true,
+        writeIntervalMs: 100,
+        specOutputFileBehavior: SPEC_OUTPUT_FILE_BEHAVIOR.PRESERVE
+    });
+}
 const fs = require('fs');
 const bodyParser = require("body-parser");
 const http = require('http');
@@ -223,25 +240,116 @@ async function classify(url, req, res) {
     }
 }
 
+const docsFolder = process.cwd() + "/src/";
+
 function v2() {
     const prefix = "/api/v2/";
-
+    const v2RouteDocs = {};
     app.get(prefix + "test", (req, res) => {
         let s = {}
         s.yes = "yes";
         res.json(s);
     });
+    v2RouteDocs[prefix + "test"] = {
+        "get": {
+            "summary": "Test endpoint",
+            "parameters": {},
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "yes": {
+                                        "type": "string",
+                                        "description": "Test"
+                                    }
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
+    }
     app.get(prefix + "categories", (req, res) => {
         res.json(nsfwModel.report);
     });
-    app.get(prefix + "classification/hash", (req, res) => {
-        res.send("Send blob/binary of hashed image using SHA-256 to get cached response, return 404 if not found, or /api/json/graphical/classification/hash/{sha256-hex} ")
-    });
+    v2RouteDocs[prefix + "categories"] = {
+        "get": {
+            "summary": "Get classification categories",
+            "parameters": [],
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "type": "array",
+                                    "items": {
+                                        type: "string",
+                                        description: "Category"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     app.get(prefix + "hosts", (req, res) => {
         res.json(nsfwModel.hostsFilter());
-    });//
-    app.post(prefix + "classification/hash", rawParser, async (req, res) => {
-        const key = req.body.toString("hex");
+    });
+    v2RouteDocs[prefix + "hosts"] = {
+        "get": {
+            "summary": "Get hosts filter list",
+            "parameters": [],
+            "responses": {
+                "200": {
+                    "description": "Success",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "allowedHost": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Host"
+                                        }
+                                    },
+                                    "blockedHost": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "description": "Host"
+                                        }
+                                    },
+                                    "allowedAll": {
+                                        "type": "boolean",
+                                        "description": "Allow all hosts"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    app.post(prefix + "classification/hash", async (req, res) => {
+        let key = req.body;//base64 encoded to hex
+        if (key.endsWith("=")) {
+            key = Buffer.from(key, 'base64').toString('hex');
+        }
         if (!!(await hashCache.get(key))) {
             //res.set(cache.get(key))
             const cache = await hashCache.get(key);
@@ -252,8 +360,48 @@ function v2() {
         res.json({hex: key}).status(404);
         res.end()
     })
+    v2RouteDocs[prefix + "classification/hash"] = {
+        "post": {
+            "summary": "Get classification for hash",
+            "parameters": {
+                "body": {
+                    "description": "Base64 encoded image hash sha256",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "format": "base64"
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Cache found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification"
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Cache not found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/cache/miss"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     app.get(prefix + "classification/hash/:hash", async (req, res) => {
-        const key = req.params.hash;
+        let key = req.params.hash;
+        if (key.endsWith("=")) {
+            key = Buffer.from(key, 'base64').toString('hex');
+        }
         if (!!(await hashCache.get(key))) {
             //res.set(cache.get(key))
             const cache = await hashCache.get(key);
@@ -265,9 +413,45 @@ function v2() {
         res.json({hex: key}).status(404);
         res.end()
     });
-
-    app.post(prefix + "classification", rawParser, async (req, res) => {
-        //check if its actually a Buffer
+    v2RouteDocs[prefix + "classification/hash/{hash}"] = {
+        "get": {
+            "summary": "Get classification for hash",
+            "parameters": {
+                "hash": {
+                    "description": "Image hash sha256",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "format": "base64"
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Cache found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification"
+                            }
+                        }
+                    }
+                },
+                "404": {
+                    "description": "Cache not found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/cache/miss"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    app.post(prefix + "classification", async (req, res) => {
+        //check if it's actually a Buffer
         if (!Buffer.isBuffer(req.body)) {
             res.status(400);
             res.json({error: "Invalid request"});
@@ -293,6 +477,53 @@ function v2() {
         res.json(dig).status(dig.status);
         res.end()
     })
+    v2RouteDocs[prefix + "classification"] = {
+        "post": {
+            "summary": "Get classification for image",
+            "parameters": {
+                "body": {
+                    "description": "Image",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "format": "base64"
+                    }
+                }
+            },
+            "responses": {
+                "201": {
+                    "description": "Classification found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification"
+                            }
+                        }
+                    }
+                },
+                "406": {
+                    "description": "Invalid request",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification/error"
+                            }
+                        }
+                    }
+                },
+                "500": {
+                    "description": "Internal error",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification/error"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     const urlClassificationLength = prefix + "classification/".length;
     app.get(prefix + "classification/*", async (req, res) => {
         let url = req.url.substring(urlClassificationLength);
@@ -339,11 +570,111 @@ function v2() {
         }
         await classify(url, req, res);
     });
+    v2RouteDocs[prefix + "classification/{url}"] = {
+        "get": {
+            "summary": "Get classification for url",
+            "parameters": {
+                "url": {
+                    "description": "Image url",
+                    "required": true,
+                    "schema": {
+                        "type": "string",
+                        "format": "url"
+                    }
+                }
+            },
+            "responses": {
+                "200": {
+                    "description": "Classification found",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification"
+                            }
+                        }
+                    }
+                },
+                "406": {
+                    "description": "Invalid request",
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/classification/error"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 
-    const docsPath = prefix + "openapi";
-    let docsV2 = require('./openapi/docs.json');
-    docsV2.paths = {}
+    const docsPath = prefix + "docs";
+    let docsV2 = require(docsFolder + 'docs.json');
 
+    app._router.stack.forEach(function (middleware) {
+        if (middleware.route) {
+            //if route path starts with /api/v2/
+            if (middleware.route.path.startsWith(prefix)) {
+                const route = middleware.route;
+                const path = route.path.substring(prefix.length);
+                for (const method of Object.keys(route.methods)) {
+                    const methodName = method.toLowerCase();
+                    const methodPath = route.path;
+                    if (!docsV2.paths[methodPath]) {
+                        docsV2.paths[methodPath] = {};
+                    }
+                    docsV2.paths[methodPath][methodName] = {
+                        summary: route.methods[method].summary,
+
+                    }
+                }
+            }
+
+        }
+    });
+    docsV2.paths = v2RouteDocs;
+    docsV2['components'] = {
+        "schemas": {
+            "classification": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    }
+                },
+                "error": {
+                    "type": "object",
+                    "properties": {
+                        "error": {
+                            "type": "string"
+                        },
+                        "status": {
+                            "type": "integer"
+                        }
+                    }
+                }
+            },
+            "cache": {
+                "type": "object",
+                "properties": {
+                    "model": {
+                        "type": "string"
+                    }
+                },
+                "miss": {
+                    "type": "object",
+                    "properties": {
+                        "error": {
+                            "type": "string"
+                        },
+                    }
+                }
+            }
+
+        }
+    };
+    //write
+    fs.writeFileSync(docsFolder + "v2.json", JSON.stringify(docsV2, null, 2));
     app.use(docsPath, swaggerUi.serve, swaggerUi.setup(docsV2, {
         explorer: true,
     }));
@@ -464,7 +795,10 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     }
     await classify(url, req, res);
 });
-
+let docs = require(docsFolder + 'generated_v3.json');
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(docs, {
+    explorer: true,
+}));
 app.get("*", function (req, res) {
     res.status(404);
 
@@ -482,6 +816,9 @@ app.get("*", function (req, res) {
 
 
 //HTTP Server stuff here
+if (process.env.TEST_MODE) {
+    expressOasGenerator.handleRequests();
+}
 const httpServer = http.createServer(app);
 httpServer.listen(httpPort, () => {
     console.log("Http server listing on port : " + httpPort)

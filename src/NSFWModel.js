@@ -266,6 +266,7 @@ module.exports = {
         image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
         reportPrediction.model = currentModel;
         reportPrediction.timestamp = new Date().getTime();
+        reportPrediction.hex = hex;
         //set cache
         if (hashCache) {
             hashCache.set(hex, reportPrediction);
