@@ -8,9 +8,9 @@ const Path = require("path");
 const Fs = require("fs");
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
-    "https://cdn.discordapp.com/attachments/840041811384860708/870977097651331072/IMG_20210731_144040.jpg",
+    "https://media.discordapp.net/attachments/997389718163566652/1000542968052207708/unknown.png",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
-    "https://media.discordapp.net/attachments/840041811384860708/869557735585362001/cancer-memri.gif"
+    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";

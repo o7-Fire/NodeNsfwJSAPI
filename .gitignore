@@ -193,5 +193,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-/test.js
 /.idea/discord.xml
