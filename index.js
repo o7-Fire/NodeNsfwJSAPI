@@ -363,8 +363,9 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
         }
         if (process.env.CERTBOT) {
-            credentials.cert = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/fullchain.pem");
-            credentials.key = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/privkey.pem");
+            var hostname = process.env.HOSTNAME;
+            credentials.cert = fs.readFileSync(`/etc/letsencrypt/live/${hostname}/fullchain.pem`);
+            credentials.key = fs.readFileSync(`/etc/letsencrypt/live/${hostname}/privkey.pem`);
         }
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {
