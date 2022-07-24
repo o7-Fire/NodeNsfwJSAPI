@@ -61,4 +61,4 @@ Adopted from:
 - https://github.com/infinitered/nsfwjs
 
 Preview: 
-https://nsfw-detector-o7.herokuapp.com/
+https://api.yeet.ml
