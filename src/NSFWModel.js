@@ -12,8 +12,8 @@ if (isLinux) {
 
 if (!haveAVX) {
     console.error(cpuInfo);
-    console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line (" + __filename + ":16:1)");
-    err = new Error("Server don't have AVX instruction set");//comment this to work
+    console.error("AVX instruction set not detected, this will cause the API to be slow! if you believe it is a mistake please delete this line (" + __filename + ":16:1)");
+    //err = new Error("Server don't have AVX instruction set");//comment this to work
     //throw err;
 }
 const axios = require("axios")
