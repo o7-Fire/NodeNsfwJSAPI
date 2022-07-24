@@ -267,7 +267,7 @@ module.exports = {
         }
         let pic;
         let result = {};
-        const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net").split(";");
+        const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net;github.com").split(";");
         const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
         const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
         try {
