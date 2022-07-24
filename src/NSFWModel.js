@@ -127,6 +127,10 @@ function getImageType(content) {
     // https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files)
     // This aligns with TensorFlow Core code:
     // https://github.com/tensorflow/tensorflow/blob/4213d5c1bd921f8d5b7b2dc4bbf1eea78d0b5258/tensorflow/core/kernels/decode_image_op.cc#L44
+    //if not buffer or Uint8Array
+    if (!(content instanceof Buffer) && !(content instanceof Uint8Array)) {
+        throw new Error('Expected image buffer or Uint8Array, got ' + (typeof content));
+    }
     if (content.length > 3 && content[0] === 255 && content[1] === 216 &&
         content[2] === 255) {
         // JPEG byte chunk starts with `ff d8 ff`
@@ -267,17 +271,26 @@ module.exports = {
         }
         let pic;
         let result = {};
+        const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net;github.com").split(";");
+        const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
+        const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
         try {
-            pic = await axios.get(url, {
-                responseType: "arraybuffer",
-                maxContentLength: 15e7
-            });
+            const host = new URL(url).hostname;
+            if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
+                pic = await axios.get(url, {
+                    responseType: "arraybuffer",
+                    maxContentLength: 15e7
+                });
+            } else {
+                return {error: "Host is blocked", status: 403}
+            }
         } catch (err) {
             result.error = "Download Image Error for \"" + url + "\": " + err.toString();
             console.error(result.error);
             result.status = err.response.status;
             return result;
         }
+
         try {
             result = await this.digest(pic.data);
         } catch (err) {
