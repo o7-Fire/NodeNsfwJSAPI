@@ -148,7 +148,7 @@ async function test1() {
     try {
         console.log("\n\n");
         console.log("Test 1");
-        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://media.discordapp.net/attachments/840041811384860709/870629782772150322/TraptrixArchetype.png');
+        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png');
         const data = response.data;
         console.log("```js");
         console.log(data);
