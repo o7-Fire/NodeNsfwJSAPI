@@ -8,9 +8,9 @@ const Path = require("path");
 const Fs = require("fs");
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
-    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
-    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
-    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
+    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",//weeb
+    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",//digital drawing
+    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif",//memri gif
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
@@ -162,7 +162,7 @@ async function test1() {
     try {
         console.log("\n\n");
         console.log("Test 1");
-        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png');
+        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
         console.error("Should fail but didn't");
         exit();
     } catch (error) {

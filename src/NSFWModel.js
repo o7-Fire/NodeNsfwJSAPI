@@ -35,7 +35,7 @@ if (haveAVX) {
     nsfw.load = async function () {
         throw err;
     }
-    nsfw.classify = async function (){
+    nsfw.classify = async function () {
         throw err;
     }
 }
@@ -168,7 +168,6 @@ function getImageType(content) {
             'image type');
     }
 }
-
 let hashCache = undefined;
 module.exports = {
     report: report,
