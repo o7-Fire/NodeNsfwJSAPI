@@ -218,7 +218,7 @@ module.exports = {
     },
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
-            return
+            return false;
         }
         if (!hash) {
             hash = this.hashData(data);
@@ -226,6 +226,7 @@ module.exports = {
         fs.writeFileSync(Path.resolve(__dirname, cacheDir, hash), data, {
             flag: 'w'
         });
+        return true;
     },
     //must not throw error
     //so anyway I start throwing error
@@ -242,7 +243,7 @@ module.exports = {
             hex = this.hashData(data);
         }
         this.saveImage(data, hex).then(r => {
-            console.log("Saved image: " + hex);
+            if(r) console.log("Saved image: " + hex);
         });
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
