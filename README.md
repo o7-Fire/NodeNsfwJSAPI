@@ -2,16 +2,7 @@
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/o7-Fire/NodeNsfwJSAPI)
 
-
-### Self Signed SSL
-- mkdir certsFiles && cd certsFiles
-- sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./selfsigned.key -out selfsigned.crt
-
-or just use certbot (if you selfhost it)
-
-- sudo apt install -y certbot
-- certbot certonly --standalone -d yourdomain.com #need to have port 80 open and run as sudo if not root already
-- add CERTBOT=true on .env
+###  [Installation](https://github.com/o7-Fire/NodeNsfwJSAPI/wiki/Installation)
 
 ### TODO
 - Process external gif
@@ -66,7 +57,8 @@ or just use certbot (if you selfhost it)
 ### Misc
 
 Adopted from:
-https://github.com/SashiDo/content-moderation-image-api, https://github.com/infinitered/nsfwjs
+- https://github.com/SashiDo/content-moderation-image-api 
+- https://github.com/infinitered/nsfwjs
 
 Preview: 
 https://api.yeet.ml
