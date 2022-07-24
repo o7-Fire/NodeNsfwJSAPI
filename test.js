@@ -8,7 +8,7 @@ const Path = require("path");
 const Fs = require("fs");
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
-    "https://media.discordapp.net/attachments/997389718163566652/1000542968052207708/unknown.png",
+    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
     "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
 ];
