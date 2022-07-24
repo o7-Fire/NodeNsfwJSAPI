@@ -272,23 +272,21 @@ module.exports = {
         const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
         try {
             const host = new URL(url).hostname;
-            if (blockedHost.includes(host)) {
+            if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
+                pic = await axios.get(url, {
+                    responseType: "arraybuffer",
+                    maxContentLength: 15e7
+                });
+            } else {
                 return {error: "Host is blocked", status: 403}
             }
-            if (!allowedAll && !allowedHost.includes(host)) {
-                console.error("Host not allowed: " + host);
-                return {error: "Host not allowed: " + host, status: 403};
-            }
-            pic = await axios.get(url, {
-                responseType: "arraybuffer",
-                maxContentLength: 15e7
-            });
         } catch (err) {
             result.error = "Download Image Error for \"" + url + "\": " + err.toString();
             console.error(result.error);
             result.status = err.response.status;
             return result;
         }
+
         try {
             result = await this.digest(pic.data);
         } catch (err) {
