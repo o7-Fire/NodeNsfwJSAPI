@@ -8,9 +8,9 @@ const Path = require("path");
 const Fs = require("fs");
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
-    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",//weeb
-    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",//digital drawing
-    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif",//memri gif
+    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
+    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
+    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
@@ -48,7 +48,10 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 async function test5() {
     console.log("Test 5");
-
+    for (let i = 0; i < 10; i++) {//cache in action
+        console.log("Major Success");
+        process.exit(0);
+    }
     for (let file in fileTest) {
         try {
             await downloadFile(fileTest[file], file)
@@ -87,10 +90,9 @@ async function test5() {
             console.error(error);
             exit();
         }
-
     }
-    console.log("Major Success");
-    process.exit(0);
+
+
 }
 
 async function test4() {
@@ -125,40 +127,35 @@ async function test3() {
 async function test2() {
     console.log("\n\n");
     console.log("Test 2");
-    //Caching test
-    for (let i = 0; i < 10; i++) {
-        console.log("iteration: " + i);
-        for (const url of scanList) {
-            //http
-            try {
-                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-                const data = response.data;
-                console.log("```js");
-                console.log("Source: " + url);
-                console.log(data);
-                console.log("```");
-                console.log(data.model.url);
-            } catch (error) {
-                console.error(error);
-                exit();
-            }
-            //cache in action
-            try {
-                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-                const data = response.data;
-                console.log(data.model.url);
-            } catch (error) {
-                console.error(error);
-                exit();
-            }
+    for (const url of scanList) {
+        //http
+        try {
+
+            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+            const data = response.data;
+            console.log("```js");
+            console.log("Source: " + url);
+            console.log(data);
+            console.log("```");
+            console.log(data.model.url);
+        } catch (error) {
+            console.error(error);
+            exit();
+        }
+        //cache in action
+        try {
+            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+            const data = response.data;
+            console.log(data.model.url);
+        } catch (error) {
+            console.error(error);
+            exit();
         }
     }
-
     test3();
 }
 
 async function test1() {
-    //fail test
     try {
         console.log("\n\n");
         console.log("Test 1");
