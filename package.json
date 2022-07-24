@@ -2,7 +2,7 @@
   "//1": "describes your app and its dependencies",
   "//2": "https://docs.npmjs.com/files/package.json",
   "//3": "updating this file will download and update your packages",
-  "name": "NodeNSFWDetectionAPI",
+  "name": "node-nsfw-detector-api",
   "version": "0.0.1",
   "description": "A simple Node app built on Express, instantly up and running.",
   "main": "index.js",
@@ -13,14 +13,14 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^3.3.0",
     "ansi-regex": ">=6.0.1",
-    "axios": "^0.21.2",
+    "axios": "^0.27.2",
     "body-parser": "^1.19.0",
     "dotenv": "^16.0.1",
-    "express": "^4.17.1",
+    "ioredis": "^5.2.2",
+    "express": "^4.18.1",
     "jpeg-js": "^0.4.3",
     "memjs": "^1.3.0",
     "nsfwjs": "^2.3.0",
-    "redis": "^4.0.0-rc.1",
     "seedrandom": "^2.4.4"
   },
   "repository": {

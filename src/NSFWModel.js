@@ -1,34 +1,41 @@
 // you can use any other http client
 
 let haveAVX = true;
-let cpuinfo = "None";
+let cpuInfo = "No CPU Info";
 const fs = require('fs');
 const isLinux = process.platform === "linux";
 let err = undefined;
 if (isLinux) {
-    cpuinfo = String(fs.readFileSync("/proc/cpuinfo"));
-    haveAVX = cpuinfo.includes("avx");
+    cpuInfo = String(fs.readFileSync("/proc/cpuinfo"));
+    haveAVX = cpuInfo.includes("avx");
 }
 
 if (!haveAVX) {
-    console.error(cpuinfo);
+    console.error(cpuInfo);
     console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line");
     err = new Error("Server don't have AVX instruction set");//comment this to work
     //throw err;
 }
 const axios = require("axios")
 const jpeg = require("jpeg-js");
+const Path = require("path");
+const crypto = require('crypto');
+const cacheDir = process.cwd() + "/pics";
+try {
+    fs.mkdirSync(cacheDir);
+} catch (e) {
+}
 let tf, nsfw = {};
-if(haveAVX) {
+if (haveAVX) {
 
     tf = require("@tensorflow/tfjs-node");
     nsfw = require("nsfwjs");
     tf.enableProdMode(); // enable on production
-}else {
-    nsfw.load = async function (){
+} else {
+    nsfw.load = async function () {
         throw err;
     }
-    nsfw.classify = async function (){
+    nsfw.classify = async function () {
         throw err;
     }
 }
@@ -161,7 +168,7 @@ function getImageType(content) {
             'image type');
     }
 }
-
+let hashCache = undefined;
 module.exports = {
     report: report,
     init: async function () {
@@ -188,10 +195,50 @@ module.exports = {
             }
         }
     },
+    setCaching: function (hashingFunc) {
+        //check for get and set method
+        if (typeof hashingFunc.get === "function" && typeof hashingFunc.set === "function") {
+            hashCache = hashingFunc;
+        }
+    },
+    hashData: function (data) {
+        //if binary or buffer return hash
+        if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
+            //if binary return hash
+            return crypto.createHash('sha256').update(data).digest('hex');
+        }
+        //return string
+        return data + "";
+    },
+    saveImage: async function (data, hash) {//return hash
+        if (!process.env.CACHE_IMAGE_HASH_FILE) {
+            return
+        }
+        if (!hash) {
+            hash = this.hashData(data);
+        }
+        fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hash)), data, {
+            flag: 'w'
+        });
+    },
     //must not throw error
-    //so anyway i start throwing error
+    //so anyway I start throwing error
     digest: async function (data) {
-        if(err)return {error: err.toString(), status: 500}
+        let hex;
+        if (hashCache) {
+            hex = this.hashData(data);
+            const cached = await hashCache.get(hex);
+            if (cached) {
+                return cached;
+            }
+        }
+        if (err) return {error: err.toString(), status: 500}
+        if (!hex) {
+            hex = this.hashData(data);
+        }
+        this.saveImage(data, hex).then(r => {
+            console.log("Saved image: " + hex);
+        });
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
         let reportPrediction = {};
@@ -201,14 +248,14 @@ module.exports = {
         let gif = false;
         try {
             gif = getImageType(data) === "GIF"
-        }catch (e){
+        } catch (e) {
             return {error: e.toString(), status: 415}
         }
         //if gif return 4D else 3D
         image = await tf.node.decodeImage(data,3);
 
         if (gif) {
-            if (!supportGIF) throw new Error("GIF not supported by server config")
+            if (!supportGIF) throw new Error("GIF not supported by server")
             reportPrediction = await classifyGif(image);
         } else {
             reportPrediction = await classify(image);
@@ -217,9 +264,23 @@ module.exports = {
 
         image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
         reportPrediction.model = currentModel;
+        reportPrediction.timestamp = new Date().getTime();
+        //set cache
+        if (hashCache) {
+            hashCache.set(hex, reportPrediction);
+        }
         return reportPrediction;
     },
+
+
     classify: async function (url) {
+        //check cache
+        if (hashCache) {
+            const data = await hashCache.get(url);
+            if (data) {
+                return data;
+            }
+        }
         let pic;
         let result = {};
         try {
@@ -228,9 +289,9 @@ module.exports = {
                 maxContentLength: 15e7
             });
         } catch (err) {
-            console.error("Download Image Error:", err);
-            result.error = err.toString();
-            result.status = 406;
+            result.error = "Download Image Error for \"" + url + "\": " + err.toString();
+            console.error(result.error);
+            result.status = err.response.status;
             return result;
         }
         try {
@@ -242,5 +303,8 @@ module.exports = {
         }
 
         return result;
+    },
+    available: function () {
+        return model !== undefined;
     }
 };

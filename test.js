@@ -8,9 +8,9 @@ const Path = require("path");
 const Fs = require("fs");
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
-    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
-    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
-    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
+    "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",//weeb
+    "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",//digital drawing
+    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif",//memri gif
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
@@ -68,19 +68,28 @@ async function test5() {
                 console.log(response.status)
                 console.log(response.headers)
                 console.log(response.data)
-            }catch (e){}
+            } catch (e) {
+            }
             options.url += "/hash";
             options.data = digest;
             const hashRes = await axios(options);
-            if(hashRes.status !== 200) {
+            if (hashRes.status !== 200) {
                 throw new Error("Uncached: " + file)
             }
-        } catch (error) {exit();
+            const hex = digest.toString('hex');
+            options.url += "/" + hex;
+            options.method = 'get';
+            const hashRes2 = await axios(options);
+            if (hashRes2.status !== 200) {
+                throw new Error("Uncached: " + options.hex)
+            }
+        } catch (error) {
             console.error(error);
             exit();
         }
-    }
 
+    }
+    console.log("Major Success");
     process.exit(0);
 }
 
@@ -116,53 +125,61 @@ async function test3() {
 async function test2() {
     console.log("\n\n");
     console.log("Test 2");
-    for (const url of scanList) {
-        //http
-        try {
-
-            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-            const data = response.data;
-            console.log("```js");
-            console.log("Source: " + url);
-            console.log(data);
-            console.log("```");
-            console.log(data.model.url);
-        } catch (error) {
-            console.error(error);
-            exit();
-        }
-        //cache in action
-        try {
-            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-            const data = response.data;
-            console.log(data.model.url);
-        } catch (error) {
-            console.error(error);
-            exit();
+    //Caching test
+    for (let i = 0; i < 10; i++) {
+        console.log("iteration: " + i);
+        for (const url of scanList) {
+            //http
+            try {
+                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const data = response.data;
+                console.log("```js");
+                console.log("Source: " + url);
+                console.log(data);
+                console.log("```");
+                console.log(data.model.url);
+            } catch (error) {
+                console.error(error);
+                exit();
+            }
+            //cache in action
+            try {
+                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const data = response.data;
+                console.log(data.model.url);
+            } catch (error) {
+                console.error(error);
+                exit();
+            }
         }
     }
+
     test3();
 }
 
 async function test1() {
+    //fail test
     try {
         console.log("\n\n");
         console.log("Test 1");
-        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png');
-        const data = response.data;
-        console.log("```js");
-        console.log(data);
-        console.log("```");
-        console.log(data.model);
-        test2();
-    } catch (error) {
-        console.error(error);
+        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
+        console.error("Should fail but didn't");
         exit();
+    } catch (error) {
+        if (error.response.status === 404) {
+            test2();
+        } else {
+            console.log("Expected 404 got: " + error.response.status);
+            console.error(error);
+            exit();
+        }
+
     }
 }
 
 async function prep() {
     await nsfwModel.init();
+    console.log("Ready");
     const assad = require("./index.js");
     test1();
 }

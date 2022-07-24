@@ -1,5 +1,5 @@
 certsFiles/
-
+pics/
 # Created by .ignore support plugin (hsz.mobi)
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -46,6 +46,7 @@ cmake-build-*/
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
+
 
 # File-based project format
 *.iws
@@ -123,7 +124,7 @@ web_modules/
 
 # TypeScript cache
 *.tsbuildinfo
-.env
+.env.example
 ./test.js
 # Optional npm cache directory
 .npm
@@ -147,7 +148,7 @@ web_modules/
 .yarn-integrity
 
 # dotenv environment variables file
-.env
+.env.example
 .env.test
 
 # parcel-bundler cache (https://parceljs.org/)
