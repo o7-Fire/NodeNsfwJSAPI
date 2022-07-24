@@ -127,31 +127,35 @@ async function test3() {
 async function test2() {
     console.log("\n\n");
     console.log("Test 2");
-    for (const url of scanList) {
-        //http
-        try {
+    for (let i = 0; i < 10; i++) {
+        console.log("Iteration: " + i);
+        for (const url of scanList) {
+            //http
+            try {
 
-            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-            const data = response.data;
-            console.log("```js");
-            console.log("Source: " + url);
-            console.log(data);
-            console.log("```");
-            console.log(data.model.url);
-        } catch (error) {
-            console.error(error);
-            exit();
-        }
-        //cache in action
-        try {
-            const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
-            const data = response.data;
-            console.log(data.model.url);
-        } catch (error) {
-            console.error(error);
-            exit();
+                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const data = response.data;
+                console.log("```js");
+                console.log("Source: " + url);
+                console.log(data);
+                console.log("```");
+                console.log(data.model.url);
+            } catch (error) {
+                console.error(error);
+                exit();
+            }
+            //cache in action
+            try {
+                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const data = response.data;
+                console.log(data.model.url);
+            } catch (error) {
+                console.error(error);
+                exit();
+            }
         }
     }
+
     test3();
 }
 

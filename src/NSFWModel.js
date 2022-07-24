@@ -209,7 +209,12 @@ module.exports = {
             return crypto.createHash('sha256').update(data).digest('hex');
         }
         //return string, prevent path traversal
-        return (data + "").replace(/[^a-zA-Z0-9]/g, '.');
+        data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
+        //replace multiple dots with one
+        data = data.replace(/\.+/g, '.');
+        //remove leading and trailing dots
+        data = data.replace(/^\.+|\.+$/g, '');
+        return data;
     },
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
@@ -218,16 +223,15 @@ module.exports = {
         if (!hash) {
             hash = this.hashData(data);
         }
-        fs.writeFileSync(fs.readFileSync(Path.resolve(__dirname, cacheDir, hash)), data, {
+        fs.writeFileSync(Path.resolve(__dirname, cacheDir, hash), data, {
             flag: 'w'
         });
     },
     //must not throw error
     //so anyway I start throwing error
-    digest: async function (data) {
-        let hex;
+    digest: async function (data, hex = undefined) {
         if (hashCache) {
-            hex = this.hashData(data);
+            hex = this.hashData(hex || data);
             const cached = await hashCache.get(hex);
             if (cached) {
                 return cached;
@@ -278,7 +282,7 @@ module.exports = {
     classify: async function (url) {
         //check cache
         if (hashCache) {
-            const data = await hashCache.get(url);
+            const data = await hashCache.get(this.hashData(url));
             if (data) {
                 return data;
             }
@@ -307,7 +311,7 @@ module.exports = {
         }
 
         try {
-            result = await this.digest(pic.data);
+            result = await this.digest(pic.data, url);
         } catch (err) {
             console.error("Prediction Error: ", err);
             result.error = err.toString();
