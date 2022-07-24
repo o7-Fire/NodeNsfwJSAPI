@@ -9,10 +9,10 @@ if (isLinux) {
     cpuInfo = String(fs.readFileSync("/proc/cpuinfo"));
     haveAVX = cpuInfo.includes("avx");
 }
-
+haveAVX = false;
 if (!haveAVX) {
     console.error(cpuInfo);
-    console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line");
+    console.error("AVX instruction set not detected, if you believe it is a mistake please delete this line (" + __filename + ":16:1)");
     err = new Error("Server don't have AVX instruction set");//comment this to work
     //throw err;
 }
