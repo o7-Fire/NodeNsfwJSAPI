@@ -9,7 +9,6 @@
 - Process external gif
 - Use preview gif for slow machine
 - imgur, giphy, etc
-- Documentation
 - Proper API
 
 ### Preview
