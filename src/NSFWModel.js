@@ -191,8 +191,8 @@ module.exports = {
             //if binary return hash
             return crypto.createHash('sha256').update(data).digest('hex');
         }
-        //return string
-        return data + "";
+        //return string, prevent path traversal
+        return (data + "").replace(/[^a-zA-Z0-9]/g, '.');
     },
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
