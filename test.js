@@ -166,10 +166,10 @@ async function test1() {
         console.error("Should fail but didn't");
         exit();
     } catch (error) {
-        if (error.response.status === 404) {
+        if (error.response.status === 403) {
             test2();
         } else {
-            console.log("Expected 404 got: " + error.response.status);
+            console.log("Expected 403 got: " + error.response.status);
             console.error(error);
             exit();
         }
