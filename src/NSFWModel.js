@@ -156,9 +156,22 @@ function getImageType(content) {
             'image type');
     }
 }
+
+function hostsFilter() {
+    const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net;github.com").split(";");
+    const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
+    const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
+    return {
+        allowedHost: allowedHost,
+        blockedHost: blockedHost,
+        allowedAll: allowedAll
+    }
+}
+
 let hashCache = undefined;
 module.exports = {
     report: report,
+    hostsFilter: hostsFilter,
     init: async function () {
 
         const model_url = process.env.NSFW_MODEL_URL;
@@ -271,11 +284,12 @@ module.exports = {
         }
         let pic;
         let result = {};
-        const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net;github.com").split(";");
-        const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
-        const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
+
         try {
             const host = new URL(url).hostname;
+            const allowedHost = hostsFilter().allowedHost;
+            const blockedHost = hostsFilter().blockedHost;
+            const allowedAll = hostsFilter().allowedAll;
             if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
                 pic = await axios.get(url, {
                     responseType: "arraybuffer",

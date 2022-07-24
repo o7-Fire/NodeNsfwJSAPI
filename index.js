@@ -231,7 +231,9 @@ app.get("/api/json/graphical", (req, res) => {
 app.get("/api/json/graphical/classification/hash", (req, res) => {
     res.send("Send blob/binary of hashed image using SHA-256 to get cached response, return 404 if not found, or /api/json/graphical/classification/hash/{sha256-hex} ")
 });
-
+app.get("/api/json/allowed/hosts", (req, res) => {
+    res.json(nsfwModel.hostsFilter());
+});//
 app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
     const key = req.body.toString("hex");
     if (!!(await hashCache.get(key))) {
