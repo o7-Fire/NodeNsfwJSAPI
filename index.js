@@ -154,7 +154,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                 value = JSON.stringify(value);
                 client.set(key, value).catch(e => console.log("Redis Error:", e))
             }
-            await hashCache.set("json", {"test": "test"});
+            await hashCache.set("json", { "test": "test" });
             value = await hashCache.get("json");
             if (value.test !== "test") throw new Error("Redis failed");
             console.log("Using redis")
@@ -210,7 +210,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                 }
                 mc.set(key, value).catch(e => console.log("Memcached Error:", e))
             }
-            await hashCache.set("json", {"test": "test"});
+            await hashCache.set("json", { "test": "test" });
             let value = await hashCache.get("json");
             if (value.test !== "test") throw new Error("Memcached failed");
             console.log("Using Memcached")
@@ -235,7 +235,7 @@ async function classify(url, req, res) {
         res.json(response);
     } catch (err) {
         res.status(500);
-        res.json({error: "Internal Error"});
+        res.json({ error: "Internal Error" });
         console.log(err);
     }
 }
@@ -357,7 +357,7 @@ function v2() {
             res.json(cache).status(200);
             return res.end()
         }
-        res.json({hex: key}).status(404);
+        res.json({ hex: key }).status(404);
         res.end()
     })
     v2RouteDocs[prefix + "classification/hash"] = {
@@ -410,7 +410,7 @@ function v2() {
             return res.end()
         }
 
-        res.json({hex: key}).status(404);
+        res.json({ hex: key }).status(404);
         res.end()
     });
     v2RouteDocs[prefix + "classification/hash/{hash}"] = {
@@ -454,7 +454,7 @@ function v2() {
         //check if it's actually a Buffer
         if (!Buffer.isBuffer(req.body)) {
             res.status(400);
-            res.json({error: "Invalid request"});
+            res.json({ error: "Invalid request" });
             return res.end();
         }
         if (req.body.length < 8) {//tampered ??????
@@ -463,7 +463,7 @@ function v2() {
             }).status(406);
         }
 
-        let dig = {error: "not found", status: 404}
+        let dig = { error: "not found", status: 404 }
         try {
             dig = await nsfwModel.digest(req.body);
         } catch (e) {
@@ -527,40 +527,24 @@ function v2() {
     const urlClassificationLength = prefix + "classification/".length;
     app.get(prefix + "classification/*", async (req, res) => {
         let url = req.url.substring(urlClassificationLength);
+        try{
+            new URL(url);
+        }catch(e){
+            return res.status(400).json({ error: e.toString(), status: 400 });
+        }
         if (!url) {
-            return res.status(400).json({error: "expected an url but got emptiness", status: 400});
+            return res.status(400).json({ error: "expected an url but got emptiness", status: 400 });
         }
         let body = {};
         let allowed = true;
-        body.error = "Not allowed/Discord media only or ended with media extension";
+        body.error = "Only ended with media extension";
         let code = 406;
-        if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {//trust discord
-            for (const ext of discordVideo) {
-                if (url.endsWith(ext)) {
-                    allowed = false;
-                    if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
-                        url = url + "?format=png";
-                        url = url.replace(
-                            "https://cdn.discordapp.com/",
-                            "https://media.discordapp.net/"
-                        );
-                        allowed = true;
-                        break;
-                    }
-                }
-            }
-
-
-        } else {
-
-            if (
-                !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
-            ) {
-                code = 415;
-                body.error = "Only allow https://cdn.discordapp.com/ or png, jpeg, bmg, jpg, gif";
-                allowed = false;
-            }
-
+        if (
+            !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
+        ) {
+            code = 415;
+            body.error = "Only allow png, jpeg, bmg, jpg, gif";
+            allowed = false;
         }
 
         if (!allowed) {
@@ -705,7 +689,7 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
         res.json(cache).status(200);
         return res.end()
     }
-    res.json({hex: key}).status(404);
+    res.json({ hex: key }).status(404);
     res.end()
 })
 app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
@@ -718,7 +702,7 @@ app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
         return res.end()
     }
 
-    res.json({hex: key}).status(404);
+    res.json({ hex: key }).status(404);
     res.end()
 });
 
@@ -726,7 +710,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     //check if its actually a Buffer
     if (!Buffer.isBuffer(req.body)) {
         res.status(400);
-        res.json({error: "Invalid request"});
+        res.json({ error: "Invalid request" });
         return res.end();
     }
     if (req.body.length < 8) {//tampered ??????
@@ -735,7 +719,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
         }).status(406);
     }
 
-    let dig = {error: "not found", status: 404}
+    let dig = { error: "not found", status: 404 }
     try {
         dig = await nsfwModel.digest(req.body);
     } catch (e) {
@@ -753,7 +737,7 @@ const urlClassificationLength = "/api/json/graphical/classification/".length;
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.substring(urlClassificationLength);
     if (!url) {
-        return res.status(400).json({error: "expected an url but got emptiness", status: 400});
+        return res.status(400).json({ error: "expected an url but got emptiness", status: 400 });
     }
     let body = {};
     let allowed = true;
