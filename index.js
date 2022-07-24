@@ -530,7 +530,7 @@ function v2() {
         try{
             new URL(url);
         }catch(e){
-            return res.status(400).json({ error: e.toString(), status: 400 });
+            return res.status(400).json({ error: e.toString(), url:url, status: 400 });
         }
         if (!url) {
             return res.status(400).json({ error: "expected an url but got emptiness", status: 400 });
