@@ -19,6 +19,7 @@ RUN mkdir ./certsFiles/
 RUN touch ./certsFiles/selfsigned.key
 RUN touch ./certsFiles/selfsigned.crt 
 COPY package*.json ./
+USER node
 RUN npm install
 VOLUME [ "/home/mossad" ]
 
