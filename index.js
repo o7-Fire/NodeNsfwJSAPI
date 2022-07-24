@@ -332,6 +332,10 @@ if (fs.existsSync(__dirname + '/certsFiles/certificate.crt')) {
         if (fs.existsSync(__dirname + '/certsFiles/ca_bundle.crt')) {
             credentials.ca = fs.readFileSync(__dirname + '/certsFiles/ca_bundle.crt');
         }
+        if (process.env.CERTBOT) {
+            credentials.cert = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/fullchain.pem");
+            credentials.key = fs.readFileSync("/etc/letsencrypt/live/yourdomain.com/privkey.pem");
+        }
         const httpsServer = https.createServer(credentials, app);
         httpsServer.listen(httpsPort, () => {
             console.log("Https server listing on port : " + httpsPort)
