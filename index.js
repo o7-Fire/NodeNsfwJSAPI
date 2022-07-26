@@ -769,7 +769,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             body.error = "Only allow https://cdn.discordapp.com/, https://media.discordapp.net/ or png, jpeg, bmg, jpg, gif";
             allowed = false;
         }
-        // practically useless -volas
+        /* practically useless -volas
         if (
             !(url.includes("width=") || url.includes("height="))
             
@@ -777,7 +777,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             code = 406;
             body.error = "Width and Height Fields Not Allowed!";
             allowed = false;
-        }
+        }*/
     }
 
     if (!allowed) {
