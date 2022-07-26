@@ -260,9 +260,9 @@ module.exports = {
 
         if (gif) {
             if (!supportGIF) throw new Error("GIF not supported by server")
-            reportPrediction = await classifyGif(image);
+            reportPrediction.data = await classifyGif(image);
         } else {
-            reportPrediction = await classify(image);
+            reportPrediction.data = await classify(image);
         }
 
 
