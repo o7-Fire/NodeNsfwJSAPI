@@ -99,7 +99,7 @@ app.use(function (req, res, next) {
         });
     } else if (req.headers.authorization !== process.env.NODE_NSFW_KEY) {
         console.log("invalid auth");
-        return res.status(403).json({
+        return res.status(451).json({
             error: "Invalid Authorization"
         });
     } else {
@@ -766,10 +766,18 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
         ) {
             code = 415;
-            body.error = "Only allow https://cdn.discordapp.com/ or png, jpeg, bmg, jpg, gif";
+            body.error = "Only allow https://cdn.discordapp.com/, https://media.discordapp.net/ or png, jpeg, bmg, jpg, gif";
             allowed = false;
         }
-
+        // practically useless -volas
+        if (
+            !(url.includes("width=") || url.includes("height="))
+            
+        ) {
+            code = 406;
+            body.error = "Width and Height Fields Not Allowed!";
+            allowed = false;
+        }
     }
 
     if (!allowed) {
