@@ -26,5 +26,5 @@ RUN mkdir ~/.npm-global && npm config set prefix '~/.npm-global' && \
 VOLUME [ "/home/mossad" ]
 
 COPY . .
-
+EXPOSE 5656
 ENTRYPOINT [ "npm", "start" ]
