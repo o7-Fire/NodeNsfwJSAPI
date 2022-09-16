@@ -11,6 +11,7 @@ Alternatively you can use https://api.yeet.ml/ or run your own using our sponsor
 - Use preview gif for slow machine
 - imgur, giphy, etc
 - Proper API
+- Rewording
 
 ### Preview
 - Not 100% perfect

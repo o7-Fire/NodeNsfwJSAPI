@@ -3,6 +3,7 @@
 
 // we've started you off with Express (https://expressjs.com/)
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
+const startTime = Date.now();
 const express = require("express");
 let expressOasGenerator;
 if (process.env.TEST_MODE) {
@@ -76,6 +77,7 @@ hashCache.clear = function () {
 
 nsfwModel.init().then(() => {
     hashCache.clear();
+    console.log("Model loaded in " + (Date.now() - startTime) + "ms");
 });
 
 nsfwModel.setCaching(hashCache);
@@ -154,7 +156,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                 value = JSON.stringify(value);
                 client.set(key, value).catch(e => console.log("Redis Error:", e))
             }
-            await hashCache.set("json", { "test": "test" });
+            await hashCache.set("json", {"test": "test"});
             value = await hashCache.get("json");
             if (value.test !== "test") throw new Error("Redis failed");
             console.log("Using redis")
@@ -210,7 +212,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                 }
                 mc.set(key, value).catch(e => console.log("Memcached Error:", e))
             }
-            await hashCache.set("json", { "test": "test" });
+            await hashCache.set("json", {"test": "test"});
             let value = await hashCache.get("json");
             if (value.test !== "test") throw new Error("Memcached failed");
             console.log("Using Memcached")
@@ -235,7 +237,7 @@ async function classify(url, req, res) {
         res.json(response);
     } catch (err) {
         res.status(500);
-        res.json({ error: "Internal Error" });
+        res.json({error: "Internal Error"});
         console.log(err);
     }
 }
@@ -357,7 +359,7 @@ function v2() {
             res.json(cache).status(200);
             return res.end()
         }
-        res.json({ hex: key }).status(404);
+        res.json({hex: key}).status(404);
         res.end()
     })
     v2RouteDocs[prefix + "classification/hash"] = {
@@ -410,7 +412,7 @@ function v2() {
             return res.end()
         }
 
-        res.json({ hex: key }).status(404);
+        res.json({hex: key}).status(404);
         res.end()
     });
     v2RouteDocs[prefix + "classification/hash/{hash}"] = {
@@ -454,7 +456,7 @@ function v2() {
         //check if it's actually a Buffer
         if (!Buffer.isBuffer(req.body)) {
             res.status(400);
-            res.json({ error: "Invalid request" });
+            res.json({error: "Invalid request"});
             return res.end();
         }
         if (req.body.length < 8) {//tampered ??????
@@ -463,7 +465,7 @@ function v2() {
             }).status(406);
         }
 
-        let dig = { error: "not found", status: 404 }
+        let dig = {error: "not found", status: 404}
         try {
             dig = await nsfwModel.digest(req.body);
         } catch (e) {
@@ -527,13 +529,13 @@ function v2() {
     const urlClassificationLength = prefix + "classification/".length;
     app.get(prefix + "classification/*", async (req, res) => {
         let url = req.url.substring(urlClassificationLength);
-        try{
+        try {
             new URL(url);
-        }catch(e){
-            return res.status(400).json({ error: e.toString(), url:url, status: 400 });
+        } catch (e) {
+            return res.status(400).json({error: e.toString(), url: url, status: 400});
         }
         if (!url) {
-            return res.status(400).json({ error: "expected an url but got emptiness", status: 400 });
+            return res.status(400).json({error: "expected an url but got emptiness", status: 400});
         }
         let body = {};
         let allowed = true;
@@ -689,7 +691,7 @@ app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) 
         res.json(cache).status(200);
         return res.end()
     }
-    res.json({ hex: key }).status(404);
+    res.json({hex: key}).status(404);
     res.end()
 })
 app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
@@ -702,7 +704,7 @@ app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
         return res.end()
     }
 
-    res.json({ hex: key }).status(404);
+    res.json({hex: key}).status(404);
     res.end()
 });
 
@@ -710,7 +712,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
     //check if its actually a Buffer
     if (!Buffer.isBuffer(req.body)) {
         res.status(400);
-        res.json({ error: "Invalid request" });
+        res.json({error: "Invalid request"});
         return res.end();
     }
     if (req.body.length < 8) {//tampered ??????
@@ -719,7 +721,7 @@ app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
         }).status(406);
     }
 
-    let dig = { error: "not found", status: 404 }
+    let dig = {error: "not found", status: 404}
     try {
         dig = await nsfwModel.digest(req.body);
     } catch (e) {
@@ -737,7 +739,7 @@ const urlClassificationLength = "/api/json/graphical/classification/".length;
 app.get("/api/json/graphical/classification/*", async (req, res) => {
     let url = req.url.substring(urlClassificationLength);
     if (!url) {
-        return res.status(400).json({ error: "expected an url but got emptiness", status: 400 });
+        return res.status(400).json({error: "expected an url but got emptiness", status: 400});
     }
     let body = {};
     let allowed = true;
@@ -775,7 +777,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             allowed = false;
         }
     }
-    
+
     if (!allowed) {
         body.status = code;
         res.status(code).json(body);
@@ -784,6 +786,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     await classify(url, req, res);
 });
 let docs = require(docsFolder + 'generated_v3.json');
+const os = require("os");
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(docs, {
     explorer: true,
 }));
@@ -808,9 +811,16 @@ if (process.env.TEST_MODE) {
     expressOasGenerator.handleRequests();
 }
 const httpServer = http.createServer(app);
-httpServer.listen(httpPort, () => {
-    console.log("Http server listing on port : " + httpPort)
+httpServer.listen(httpPort, "0.0.0.0", back => {
+    console.log("Http server listening on port : " + httpPort)
     console.log("http://localhost:" + httpPort)
+    //print all local ip
+    const interfaces = os.networkInterfaces();
+    for (const name of Object.keys(interfaces)) {
+        for (const net of interfaces[name]) {
+            console.log("http://" + net.address + ":" + httpPort)
+        }
+    }
 });
 let certsFolder = process.env.CERT_PATH || process.cwd() + '/certsFiles/';
 //end with /
@@ -866,3 +876,4 @@ if (fs.existsSync(certsFolder)) {
 } else {
     console.log("Can't start Https server, certs folder not found");
 }
+
