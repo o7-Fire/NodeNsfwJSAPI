@@ -1,5 +1,5 @@
 console.log("Test mode");
-
+let startMemoryUsage = process.memoryUsage();
 const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
 const fs = require('fs');
@@ -19,9 +19,26 @@ fileTest["pics/neutral.png"] = "https://nsfw-demo.sashido.io/neutral.png";
 console.log("Test mode");
 Fs.mkdirSync(Path.resolve(__dirname, 'pics'), {recursive: true})
 
-function exit(){
-    if(ignoreError)return;
+function exit() {
+    if (ignoreError) return;
     process.exit(1)
+}
+
+function printMemoryUsage() {
+    const endMemoryUsage = process.memoryUsage();
+    console.log("Memory Usage Delta:");
+    console.log("rss: " + (endMemoryUsage.rss - startMemoryUsage.rss) / 1024 / 1024 + "MB");
+    console.log("heapTotal: " + (endMemoryUsage.heapTotal - startMemoryUsage.heapTotal) / 1024 / 1024 + "MB");
+    console.log("heapUsed: " + (endMemoryUsage.heapUsed - startMemoryUsage.heapUsed) / 1024 / 1024 + "MB");
+    console.log("external: " + (endMemoryUsage.external - startMemoryUsage.external) / 1024 / 1024 + "MB");
+    console.log("arrayBuffers: " + (endMemoryUsage.arrayBuffers - startMemoryUsage.arrayBuffers) / 1024 / 1024 + "MB");
+    console.log("Memory Usage Current:");
+    console.log("rss: " + endMemoryUsage.rss / 1024 / 1024 + "MB");
+    console.log("heapTotal: " + endMemoryUsage.heapTotal / 1024 / 1024 + "MB");
+    console.log("heapUsed: " + endMemoryUsage.heapUsed / 1024 / 1024 + "MB");
+    console.log("external: " + endMemoryUsage.external / 1024 / 1024 + "MB");
+    console.log("arrayBuffers: " + endMemoryUsage.arrayBuffers / 1024 / 1024 + "MB");
+    startMemoryUsage = endMemoryUsage;
 }
 
 async function downloadFile(fileUrl, outputLocationPath) {
@@ -91,7 +108,7 @@ async function test5() {
             exit();
         }
     }
-
+    printMemoryUsage();
 
 }
 
@@ -101,6 +118,7 @@ async function test4() {
         console.log("Test 4");
         const response = await axios.get('http://localhost:5656/api/json/test');
         console.log(response.data);
+        printMemoryUsage();
         test5();
     } catch (error) {
         console.error(error);
@@ -117,6 +135,7 @@ async function test3() {
         console.log("```js");
         console.log(data);
         console.log("```");
+        printMemoryUsage();
         test4();
     } catch (error) {
         console.error(error);
@@ -155,7 +174,7 @@ async function test2() {
             }
         }
     }
-
+    printMemoryUsage();
     test3();
 }
 
@@ -168,6 +187,7 @@ async function test1() {
         exit();
     } catch (error) {
         if (error.response.status === 403) {
+            printMemoryUsage();
             test2();
         } else {
             console.log("Expected 403 got: " + error.response.status);

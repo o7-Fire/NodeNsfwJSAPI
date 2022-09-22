@@ -14,10 +14,26 @@ if (!haveAVX) {
     console.error(cpuInfo);
     console.error("AVX instruction set not detected, this will cause the API to be slow!");
 }
+
 const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
-const cacheDir = process.cwd() + "/pics";
+if (!!process.env.CACHE_IMAGE_HASH_FILE) {
+    //check if folder exists
+    const cacheFolder = Path.dirname(process.env.CACHE_IMAGE_HASH_FILE);
+    if (!fs.existsSync(cacheFolder)) {
+        console.log("Creating cache folder: " + cacheFolder);
+        fs.mkdirSync(cacheFolder, {recursive: true});
+    }
+    //check read and write
+    try {
+        fs.accessSync(process.env.CACHE_IMAGE_HASH_FILE, fs.constants.R_OK | fs.constants.W_OK);
+    } catch (e) {
+        console.log("Cache folder is not readable and writable, disabling cache");
+        console.log(e);
+        process.env.CACHE_IMAGE_HASH_FILE = undefined;
+    }
+}
 try {
     fs.mkdirSync(cacheDir);
 } catch (e) {
@@ -221,7 +237,7 @@ module.exports = {
         if (!hash) {
             hash = this.hashData(data);
         }
-        fs.writeFileSync(Path.resolve(__dirname, cacheDir, hash), data, {
+        fs.writeFileSync(Path.resolve(process.env.CACHE_IMAGE_HASH_FILE, hash), data, {
             flag: 'w'
         });
         return true;
