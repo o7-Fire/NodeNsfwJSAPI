@@ -4,7 +4,8 @@
 
 Alternatively you can use https://api.yeet.ml/ or run your own using our sponsor [Yeet Hosting:tm:](https://yeet.ml/)
 
-###  [Installation](https://github.com/o7-Fire/NodeNsfwJSAPI/wiki/Installation)
+###  [Quickstart](https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart)
+https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
 ### TODO
 - Process external gif
