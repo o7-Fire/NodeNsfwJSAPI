@@ -237,7 +237,20 @@ module.exports = {
         if (!hash) {
             hash = this.hashData(data);
         }
-        fs.writeFileSync(Path.resolve(process.env.CACHE_IMAGE_HASH_FILE, hash), data, {
+        //check if hash contain "/"
+        if (hash.indexOf("/") !== -1) {
+            hash = hash.replace(/\//g, ".");
+        }
+        //check if hash contain "\"
+        if (hash.indexOf("\\") !== -1) {
+            hash = hash.replace(/\\/g, ".");
+        }
+        const path = Path.resolve(process.env.CACHE_IMAGE_HASH_FILE, hash);
+        //check if file exist
+        if (fs.existsSync(path)) {
+            return false;
+        }
+        fs.writeFileSync(path, data, {
             flag: 'w'
         });
         return true;
