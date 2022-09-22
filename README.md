@@ -1,10 +1,11 @@
 ## NSFW API Detection with NodeJS
 
+### Host
 [![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
 
 Alternatively you can use https://api.yeet.ml/ or run your own using our sponsor [Yeet Hosting:tm:](https://yeet.ml/)
 
-###  [Quickstart](https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart)
+###  Quickstart
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
 ### TODO
