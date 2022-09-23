@@ -1,19 +1,9 @@
 // you can use any other http client
 
-let haveAVX = true;
-let cpuInfo = "No CPU Info";
 const fs = require('fs');
-const isLinux = process.platform === "linux";
-let err = undefined;
-if (isLinux) {
-    cpuInfo = String(fs.readFileSync("/proc/cpuinfo"));
-    haveAVX = cpuInfo.includes("avx");
-}
 
-if (!haveAVX) {
-    console.error(cpuInfo);
-    console.error("AVX instruction set not detected, this will cause the API to be slow!");
-}
+let err = undefined;
+
 
 const axios = require("axios")
 const Path = require("path");
@@ -36,19 +26,10 @@ if (!!process.env.CACHE_IMAGE_HASH_FILE) {
 }
 
 let tf, nsfw = {};
-{
+tf = require("@tensorflow/tfjs-node");
+nsfw = require("nsfwjs");
+tf.enableProdMode(); // enable on production
 
-    tf = require("@tensorflow/tfjs-node");
-    nsfw = require("nsfwjs");
-    tf.enableProdMode(); // enable on production
-} else {
-    nsfw.load = async function () {
-        throw err;
-    }
-    nsfw.classify = async function () {
-        throw err;
-    }
-}
 
 let model;
 let currentModel = {
