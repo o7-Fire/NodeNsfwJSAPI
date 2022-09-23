@@ -7,7 +7,7 @@ const startTime = Date.now();
 const express = require("express");
 let expressOasGenerator;
 if (process.env.TEST_MODE) {
-    console.log("TEST MDOE");
+    console.log("TEST MODE");
     expressOasGenerator = require('express-oas-generator');
 }
 const app = express();
