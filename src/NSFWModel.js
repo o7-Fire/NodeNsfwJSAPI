@@ -20,7 +20,7 @@ const Path = require("path");
 const crypto = require('crypto');
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
     //check if folder exists
-    const cacheFolder = Path.dirname(process.env.CACHE_IMAGE_HASH_FILE);
+    const cacheFolder = process.env.CACHE_IMAGE_HASH_FILE;
     if (!fs.existsSync(cacheFolder)) {
         console.log("Creating cache folder: " + cacheFolder);
         fs.mkdirSync(cacheFolder, {recursive: true});
@@ -30,16 +30,13 @@ if (!!process.env.CACHE_IMAGE_HASH_FILE) {
         fs.accessSync(process.env.CACHE_IMAGE_HASH_FILE, fs.constants.R_OK | fs.constants.W_OK);
     } catch (e) {
         console.log("Cache folder is not readable and writable, disabling cache");
-        console.log(e);
+        console.log(e.message);
         process.env.CACHE_IMAGE_HASH_FILE = undefined;
     }
 }
-try {
-    fs.mkdirSync(cacheDir);
-} catch (e) {
-}
+
 let tf, nsfw = {};
-if (haveAVX) {
+{
 
     tf = require("@tensorflow/tfjs-node");
     nsfw = require("nsfwjs");
@@ -129,13 +126,7 @@ async function classify(image) {
     return reportPrediction
 }
 
-async function classifyGif(gif) {
-    const arrayPredict = []
-    for (const gifElement of gif) {
-        arrayPredict.push(await classify(gifElement))
-    }
-    return arrayPredict;
-}
+
 function getImageType(content) {
     // Classify the contents of a file based on starting bytes (aka magic number:
     // https://en.wikipedia.org/wiki/Magic_number_(programming)#Magic_numbers_in_files)
@@ -182,6 +173,20 @@ function hostsFilter() {
     }
 }
 
+function hashData(data) {
+    //if binary or buffer return hash
+    if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
+        //if binary return hash
+        return crypto.createHash('sha256').update(data).digest('hex');
+    }
+    //return string, prevent path traversal
+    data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
+    //replace multiple dots with one
+    data = data.replace(/\.+/g, '.');
+    //remove leading and trailing dots
+    data = data.replace(/^\.+|\.+$/g, '');
+    return data;
+}
 let hashCache = undefined;
 module.exports = {
     report: report,
@@ -210,26 +215,13 @@ module.exports = {
             }
         }
     },
-    setCaching: function (hashingFunc) {
+    setCaching(hashingFunc) {
         //check for get and set method
         if (typeof hashingFunc.get === "function" && typeof hashingFunc.set === "function") {
             hashCache = hashingFunc;
         }
     },
-    hashData: function (data) {
-        //if binary or buffer return hash
-        if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
-            //if binary return hash
-            return crypto.createHash('sha256').update(data).digest('hex');
-        }
-        //return string, prevent path traversal
-        data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
-        //replace multiple dots with one
-        data = data.replace(/\.+/g, '.');
-        //remove leading and trailing dots
-        data = data.replace(/^\.+|\.+$/g, '');
-        return data;
-    },
+    hashData: hashData,
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
             return false;
@@ -255,6 +247,7 @@ module.exports = {
         });
         return true;
     },
+
     //must not throw error
     //so anyway I start throwing error
     digest: async function (data, hex = undefined) {
@@ -284,13 +277,14 @@ module.exports = {
         } catch (e) {
             return {error: e.toString(), status: 415}
         }
-        //if gif return 4D else 3D
-        image = await tf.node.decodeImage(data,3);
+        //if it's a gif it will return 4D else 3D
 
+        //TODO fix gif
         if (gif) {
-            if (!supportGIF) throw new Error("GIF not supported by server")
-            reportPrediction.data = await classifyGif(image);
+            if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
+            reportPrediction.data = await model.classifyGif(data);
         } else {
+            image = await tf.node.decodeImage(data, 3);
             reportPrediction.data = await classify(image);
         }
 

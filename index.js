@@ -748,8 +748,8 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
     if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {//trust discord
         for (const ext of discordVideo) {
             if (url.endsWith(ext)) {
-                allowed = false;
-                if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {
+                allowed = process.env.SUPPORT_GIF_CLASSIFICATION;
+                if (!allowed && (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/"))) {
                     url = url + "?format=png";
                     url = url.replace(
                         "https://cdn.discordapp.com/",
@@ -773,7 +773,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
         }
         if (url.includes("?width=") || url.includes("?height=")) {
             code = 415;
-            body.error = "Width and height are not allowed";
+            body.error = "Width and height parameters are not allowed";
             allowed = false;
         }
     }

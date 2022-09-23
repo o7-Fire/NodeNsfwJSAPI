@@ -1,4 +1,5 @@
 console.log("Test mode");
+require("dotenv").config();
 let startMemoryUsage = process.memoryUsage();
 const nsfwModel = require("./src/NSFWModel");
 const axios = require('axios');
@@ -6,11 +7,13 @@ const fs = require('fs');
 const crypto = require('crypto');
 const Path = require("path");
 const Fs = require("fs");
+
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
     "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
-    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif"
+    "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif",
+    "https://media.discordapp.net/attachments/921595377923268708/1000018437130702879/caption.gif"
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
@@ -156,7 +159,12 @@ async function test2() {
                 const data = response.data;
                 console.log("```js");
                 console.log("Source: " + url);
-                console.log(data);
+                //check if data is array
+                if (Array.isArray(data.data)) {
+                    console.log("Returned " + data.data.length + " frames");
+                } else {
+                    console.log(data);
+                }
                 console.log("```");
                 console.log(data.model.url);
             } catch (error) {
