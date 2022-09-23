@@ -1,9 +1,19 @@
 // you can use any other http client
 
+let haveAVX = true;
+let cpuInfo = "No CPU Info";
 const fs = require('fs');
-
+const isLinux = process.platform === "linux";
 let err = undefined;
+if (isLinux) {
+    cpuInfo = String(fs.readFileSync("/proc/cpuinfo"));
+    haveAVX = cpuInfo.includes("avx");
+}
 
+if (!haveAVX) {
+    console.error(cpuInfo);
+    console.error("WARNING !!!!!!!! AVX instruction set not detected");
+}
 
 const axios = require("axios")
 const Path = require("path");
