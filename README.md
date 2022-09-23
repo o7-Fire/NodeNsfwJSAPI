@@ -9,7 +9,7 @@ Alternatively you can use https://api.yeet.ml/ or run your own using our sponsor
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
 ### TODO
-- Process external gif
+- ~Process external gif~
 - Use preview gif for slow machine
 - imgur, giphy, etc
 - Proper API
