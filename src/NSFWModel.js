@@ -11,8 +11,8 @@ if (isLinux) {
 }
 
 if (!haveAVX) {
-    console.error(cpuInfo);
-    console.error("WARNING !!!!!!!! AVX instruction set not detected");
+    //console.error(cpuInfo);
+    console.error("WARNING!!!!!!!! AVX instruction set not detected");
 }
 
 const axios = require("axios")
