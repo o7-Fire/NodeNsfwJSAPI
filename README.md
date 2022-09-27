@@ -3,7 +3,7 @@
 ### Host
 [![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
 
-Alternatively you can use https://api.yeet.ml/ or run your own using our sponsor [Yeet Hosting:tm:](https://yeet.ml/)
+Alternatively you can use https://api.mindustry.me/ or run your own using our sponsor [Yeet Hosting:tm:](https://mindustry.me/)
 
 ###  Quickstart
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
@@ -65,4 +65,4 @@ Adopted from:
 - https://github.com/infinitered/nsfwjs
 
 Preview: 
-https://api.yeet.ml
+https://api.mindustry.me
