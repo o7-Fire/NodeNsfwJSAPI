@@ -124,7 +124,13 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
         try {
             const Redis = require('ioredis');
             let client;
-            if (process.env.REDIS_URL) {
+            if (process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT) {
+                client = new Redis.Cluster([process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT], {
+                    redisOptions: {
+                        password: process.env.REDIS_PASSWORD
+                    }
+                });
+            } else if (process.env.REDIS_URL) {
                 client = new Redis(process.env.REDIS_URL);
             } else {
                 client = new Redis({
