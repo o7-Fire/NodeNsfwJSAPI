@@ -19,6 +19,10 @@ const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
+    //check if end with /
+    if (!process.env.CACHE_IMAGE_HASH_FILE.endsWith("/")) {
+        process.env.CACHE_IMAGE_HASH_FILE = process.env.CACHE_IMAGE_HASH_FILE + "/";
+    }
     //check if folder exists
     const cacheFolder = process.env.CACHE_IMAGE_HASH_FILE;
     if (!fs.existsSync(cacheFolder)) {
