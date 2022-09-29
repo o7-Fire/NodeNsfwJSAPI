@@ -119,13 +119,20 @@ hashCache.get("yes");
 hashCache.set("yes", "yes");
 
 //format "redis[s]://[[username][:password]@][host][:port][/db-number]", e.g 'redis://alice:foobared@awesome.redis.server:6380'
-if (process.env.REDIS_URL || process.env.REDIS_HOST) {
+if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT) {
     (async () => {
         try {
             const Redis = require('ioredis');
             let client;
             if (process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT) {
-                client = new Redis.Cluster(process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT.split(","), {
+                let startupNodes = [];
+                for (const host of process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT.split(";")) {
+                    startupNodes.push({
+                        host: host.split(":")[0],
+                        port: host.split(":")[1]
+                    });
+                }
+                client = new Redis.Cluster(startupNodes, {
                     redisOptions: {
                         password: process.env.REDIS_PASSWORD
                     }
