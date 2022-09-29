@@ -38,10 +38,11 @@ const nsfwModel = require("./src/NSFWModel");
 const hashCache = {};
 const lastAccessed = {};
 hashCache.get = async function (key) {
+    const startTime = Date.now();
     const value = this[key];
     if (value) {
         lastAccessed[key] = Date.now();
-
+        value.time = Date.now() - startTime;
     }
     return value;
 }
@@ -143,11 +144,15 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST) {
                 set: hashCache.set
             };
             hashCache.get = async function (key) {
+                const startTime = Date.now();
                 let h = await local.get(key);
                 //if not exists, try redis
                 if (typeof h !== "object") h = await client.get(key);
                 //if string
                 if (h && typeof h === "string") h = JSON.parse(h);
+                if (h) {
+                    h.time = Date.now() - startTime;
+                }
                 return h;
             }
             hashCache.set = function (key, value) {
@@ -750,7 +755,7 @@ app.get("/api/json/graphical/classification/*", async (req, res) => {
             if (url.endsWith(ext)) {
                 allowed = process.env.SUPPORT_GIF_CLASSIFICATION;
                 if (!allowed && (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/"))) {
-                    url = url + "?format=png";
+                    url = url + "?format=png";//sneed
                     url = url.replace(
                         "https://cdn.discordapp.com/",
                         "https://media.discordapp.net/"

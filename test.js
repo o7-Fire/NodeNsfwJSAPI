@@ -159,12 +159,12 @@ async function test2() {
                 const data = response.data;
                 console.log("```js");
                 console.log("Source: " + url);
-                //check if data is array
+                //check if data is arrayed
                 if (Array.isArray(data.data)) {
                     console.log("Returned " + data.data.length + " frames");
-                } else {
-                    console.log(data);
+                    delete data.data;
                 }
+                console.log(data);
                 console.log("```");
                 console.log(data.model.url);
             } catch (error) {

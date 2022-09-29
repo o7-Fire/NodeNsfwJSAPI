@@ -246,6 +246,7 @@ module.exports = {
             hex = this.hashData(hex || data);
             const cached = await hashCache.get(hex);
             if (cached) {
+
                 return cached;
             }
         }
@@ -268,9 +269,8 @@ module.exports = {
         } catch (e) {
             return {error: e.toString(), status: 415}
         }
-        //if it's a gif it will return 4D else 3D
 
-        //TODO fix gif
+        const startTime = Date.now();
         if (gif) {
             if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
             reportPrediction.data = await model.classifyGif(data);
@@ -284,6 +284,7 @@ module.exports = {
         reportPrediction.model = currentModel;
         reportPrediction.timestamp = new Date().getTime();
         reportPrediction.hex = hex;
+        reportPrediction.time = Date.now() - startTime;
         //set cache
         if (hashCache) {
             hashCache.set(hex, reportPrediction);
