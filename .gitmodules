@@ -1,0 +1,3 @@
+[submodule "node-nsfw-js-aws-cdk"]
+	path = node-nsfw-js-aws-cdk
+	url = https://github.com/Itzbenz/node-nsfw-js-aws-cdk.git
