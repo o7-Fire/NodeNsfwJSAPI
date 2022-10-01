@@ -250,7 +250,6 @@ module.exports = {
             hex = this.hashData(hex || data);
             const cached = await hashCache.get(hex);
             if (cached) {
-
                 return cached;
             }
         }
@@ -289,6 +288,7 @@ module.exports = {
         reportPrediction.timestamp = new Date().getTime();
         reportPrediction.hex = hex;
         reportPrediction.time = Date.now() - startTime;
+        if (process.env.TEST_MODE) reportPrediction.cache = "miss";
         //set cache
         if (hashCache) {
             hashCache.set(hex, reportPrediction);

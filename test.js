@@ -154,7 +154,6 @@ async function test2() {
         for (const url of scanList) {
             //http
             try {
-
                 const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
                 const data = response.data;
                 console.log("```js");
@@ -175,7 +174,8 @@ async function test2() {
             try {
                 const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
                 const data = response.data;
-                console.log(data.model.url);
+                delete data.data;
+                console.log(data);
             } catch (error) {
                 console.error(error);
                 exit();

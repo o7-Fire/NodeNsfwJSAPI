@@ -43,10 +43,18 @@ hashCache.get = async function (key) {
     if (value) {
         lastAccessed[key] = Date.now();
         value.time = Date.now() - startTime;
+        value.hex = key;
+        if (process.env.TEST_MODE) value.cache = "local";
     }
     return value;
 }
 hashCache.set = function (key, value) {
+    //make value immutable
+    value = JSON.parse(JSON.stringify(value));//also cleans up the object
+    //clean value
+    delete value.time;
+    delete value.cache;
+    delete value.hex;
     //check if size is too big
     const maxSize = process.env.MAX_CACHE_SIZE || 100;
     if (Math.random() < 0.1) {
@@ -64,6 +72,7 @@ hashCache.set = function (key, value) {
         }
     }
     this[key] = value;
+    return value;
 }
 hashCache.clear = function () {
     // for enumerable properties of shallow/plain object
@@ -78,7 +87,7 @@ hashCache.clear = function () {
 
 nsfwModel.init().then(() => {
     hashCache.clear();
-    console.log("Model loaded in " + (Date.now() - startTime) + "ms");
+    console.log("Model loaded in", Date.now() - startTime, "ms");
 });
 
 nsfwModel.setCaching(hashCache);
@@ -119,8 +128,9 @@ hashCache.get("yes");
 hashCache.set("yes", "yes");
 
 //format "redis[s]://[[username][:password]@][host][:port][/db-number]", e.g 'redis://alice:foobared@awesome.redis.server:6380'
+let cacheAsync;
 if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT) {
-    (async () => {
+    cacheAsync = async function () {
         try {
             const Redis = require('ioredis');
             let client;
@@ -137,6 +147,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
                         password: process.env.REDIS_PASSWORD
                     }
                 });
+                console.info("Redis Cluster Mode");
             } else if (process.env.REDIS_URL) {
                 client = new Redis(process.env.REDIS_URL);
             } else {
@@ -147,11 +158,17 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
                     db: process.env.REDIS_DB || 0
                 });
             }
-            client.on('error', (err) => console.log('Redis Client Error', err));
+            client.on('error', (err) => {
+                console.error('Redis Client Error', err);
+            });
+            client.set('key', 'value');
             await client.set('key', 'value');
             let value = await client.get('key');
             await client.del('key');
-
+            if (value !== 'value') {
+                console.error('Redis Client Error', "Redis is not working 'GET key' returned " + value, "expected 'value'");
+                return;
+            }
             const local = {
                 get: hashCache.get,
                 set: hashCache.set
@@ -160,16 +177,23 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
                 const startTime = Date.now();
                 let h = await local.get(key);
                 //if not exists, try redis
-                if (typeof h !== "object") h = await client.get(key);
-                //if string
-                if (h && typeof h === "string") h = JSON.parse(h);
+                if (typeof h !== "object") {
+                    h = await client.get(key);
+                    //if string
+                    if (h && typeof h === "string") {
+                        h = JSON.parse(h);
+                        if (process.env.TEST_MODE) h.cache = "redis";
+                        local.set(key, h);
+                    }
+                }
                 if (h) {
                     h.time = Date.now() - startTime;
+
                 }
                 return h;
             }
             hashCache.set = function (key, value) {
-                local.set(key, value);
+                value = local.set(key, value);//cleaned by local
                 //serialize value to string
                 value = JSON.stringify(value);
                 client.set(key, value).catch(e => console.log("Redis Error:", e))
@@ -177,15 +201,18 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
             await hashCache.set("json", {"test": "test"});
             value = await hashCache.get("json");
             if (value.test !== "test") throw new Error("Redis failed");
-            console.log("Using redis")
+            console.info("Using Redis");
+            if (process.env.TEST_MODE) {
+                console.log("HOST: " + (process.env.REDIS_HOST || process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT));
+            }
             nsfwModel.setCaching(hashCache);
         } catch (e) {
             console.error("Failed to use redis:", e.toString())
         }
-    })();
+    };
 
 } else if (process.env.MEMCACHED_HOST) {
-    (async () => {
+    cacheAsync = async function () {
         try {
             const memjs = require('memjs');
             if (!process.env.MEMCACHED_USERNAME || !process.env.MEMCACHED_PASSWORD) {
@@ -235,12 +262,24 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
             if (value.test !== "test") throw new Error("Memcached failed");
             console.log("Using Memcached")
             nsfwModel.setCaching(hashCache);
+            if (process.env.TEST_MODE) {
+                console.log("HOST: " + process.env.MEMCACHED_HOST);
+            }
         } catch (e) {
             console.error("Failed to use Memcached:", e.toString())
         }
-    })();
+    };
 } else {
     console.log("No REDIS_URL or MEMCACHED_HOST in environment, using default caching")
+}
+if (cacheAsync) {
+    const startTime = Date.now();
+    cacheAsync().then(() => {
+        console.log("Cache init time:", Date.now() - startTime, "ms");
+    }).catch(e => {
+        console.error("Failed to init cache:", e.toString())
+    });
+
 }
 let discordVideo = [".gif", ".mp4", ".webm"];
 
@@ -828,70 +867,78 @@ app.get("*", function (req, res) {
 if (process.env.TEST_MODE) {
     expressOasGenerator.handleRequests();
 }
-const httpServer = http.createServer(app);
-httpServer.listen(httpPort, "0.0.0.0", back => {
-    console.log("Http server listening on port : " + httpPort)
-    console.log("http://localhost:" + httpPort)
-    //print all local ip
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const net of interfaces[name]) {
-            console.log("http://" + net.address + ":" + httpPort)
+try {
+    const httpServer = http.createServer(app);
+    httpServer.listen(httpPort, "0.0.0.0", back => {
+        console.log("Http server listening on port : " + httpPort)
+        console.log("http://localhost:" + httpPort)
+        //print all local ip
+        const interfaces = os.networkInterfaces();
+        for (const name of Object.keys(interfaces)) {
+            for (const net of interfaces[name]) {
+                console.log("http://" + net.address + ":" + httpPort)
+            }
         }
-    }
-});
-let certsFolder = process.env.CERT_PATH || process.cwd() + '/certsFiles/';
+    });
+    let certsFolder = process.env.CERT_PATH || process.cwd() + '/certsFiles/';
 //end with /
-if (!certsFolder.endsWith('/')) {
-    certsFolder = certsFolder + '/';
-}
-if (fs.existsSync(certsFolder)) {
-    try {
-
-        const credentials = {};
-        const certFilesName = ['certificate.crt', 'fullchain.pem'];
-        const keyFilesName = ['key.key', 'privkey.pem', 'private.key', 'privatekey.pem'];
-        const caFilesName = ['ca.crt', 'chain.pem', 'chain.cert.pem'];
-        for (const certFileName of certFilesName) {
-            if (fs.existsSync(certsFolder + certFileName)) {
-                credentials.cert = fs.readFileSync(certsFolder + certFileName);
-                console.log('cert file found : ' + certsFolder + certFileName);
-                break;
-            }
-        }
-        if (!credentials.cert) {
-            console.error('cert file not found in : ' + certsFolder);
-        }
-        for (const keyFileName of keyFilesName) {
-            if (fs.existsSync(certsFolder + keyFileName)) {
-                credentials.key = fs.readFileSync(certsFolder + keyFileName);
-                console.log('key file found : ' + certsFolder + keyFileName);
-                break;
-            }
-        }
-        if (!credentials.key) {
-            console.error('key file not found in : ' + certsFolder);
-        }
-        for (const caFileName of caFilesName) {
-            if (fs.existsSync(certsFolder + caFileName)) {
-                credentials.ca = fs.readFileSync(certsFolder + caFileName);
-                console.log('ca file found : ' + certsFolder + caFileName);
-                break;
-            }
-        }
-        if (!credentials.ca) {
-            console.log('ca file not found in : ' + certsFolder);
-        }
-        const httpsServer = https.createServer(credentials, app);
-        httpsServer.listen(httpsPort, () => {
-            console.log("Https server listing on port : " + httpsPort)
-            console.log("https://localhost:" + httpsPort)
-        });
-    } catch (e) {
-        console.log("Can't start Https server");
-        console.log(e);
+    if (!certsFolder.endsWith('/')) {
+        certsFolder = certsFolder + '/';
     }
-} else {
-    console.log("Can't start Https server, certs folder not found");
+    if (fs.existsSync(certsFolder)) {
+        try {
+
+            const credentials = {};
+            const certFilesName = ['certificate.crt', 'fullchain.pem'];
+            const keyFilesName = ['key.key', 'privkey.pem', 'private.key', 'privatekey.pem'];
+            const caFilesName = ['ca.crt', 'chain.pem', 'chain.cert.pem'];
+            for (const certFileName of certFilesName) {
+                if (fs.existsSync(certsFolder + certFileName)) {
+                    credentials.cert = fs.readFileSync(certsFolder + certFileName);
+                    console.log('cert file found : ' + certsFolder + certFileName);
+                    break;
+                }
+            }
+            if (!credentials.cert) {
+                console.error('cert file not found in : ' + certsFolder);
+            }
+            for (const keyFileName of keyFilesName) {
+                if (fs.existsSync(certsFolder + keyFileName)) {
+                    credentials.key = fs.readFileSync(certsFolder + keyFileName);
+                    console.log('key file found : ' + certsFolder + keyFileName);
+                    break;
+                }
+            }
+            if (!credentials.key) {
+                console.error('key file not found in : ' + certsFolder);
+            }
+            for (const caFileName of caFilesName) {
+                if (fs.existsSync(certsFolder + caFileName)) {
+                    credentials.ca = fs.readFileSync(certsFolder + caFileName);
+                    console.log('ca file found : ' + certsFolder + caFileName);
+                    break;
+                }
+            }
+            if (!credentials.ca) {
+                console.log('ca file not found in : ' + certsFolder);
+            }
+            const httpsServer = https.createServer(credentials, app);
+            httpsServer.listen(httpsPort, () => {
+                console.log("Https server listing on port : " + httpsPort)
+                console.log("https://localhost:" + httpsPort)
+            });
+        } catch (e) {
+            console.log("Can't start Https server");
+            console.log(e);
+        }
+    } else {
+        console.log("Can't start Https server, certs folder not found");
+    }
+} catch (e) {
+    console.log("Can't start Http server");
+    console.log(e);
+    if (!process.env.TEST_MODE) {
+        process.exit(1);
+    }
 }
 
