@@ -76,6 +76,7 @@ TensorFlow.js for Node currently supports the following platforms:
 For GPU support, tfjs-node-gpu@1.2.4 or later requires the following NVIDIA® software installed on your system:
 
 | Name | Version |
+|---|---|
 | [NVIDIA® GPU drivers](https://www.nvidia.com/Download/index.aspx) | CUDA 11.2 |
 | [CUDA® Toolkit](https://developer.nvidia.com/cuda-toolkit-archive) | 11.2 |
 | [cuDNN SDK](https://developer.nvidia.com/cudnn) | 8.1.0 |
