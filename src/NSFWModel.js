@@ -40,7 +40,13 @@ if (!!process.env.CACHE_IMAGE_HASH_FILE) {
 }
 
 let tf, nsfw = {};
-tf = require("@tensorflow/tfjs-node");
+//check if we have GPU
+if (process.env.GPU) {
+    tf = require('@tensorflow/tfjs-node-gpu');
+    console.log("Using GPU");
+} else {
+    tf = require("@tensorflow/tfjs-node");
+}
 nsfw = require("nsfwjs");
 tf.enableProdMode(); // enable on production
 
