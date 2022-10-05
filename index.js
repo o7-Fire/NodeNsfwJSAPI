@@ -3,7 +3,9 @@
 
 // we've started you off with Express (https://expressjs.com/)
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
+
 const startTime = Date.now();
+require("dotenv").config();
 const express = require("express");
 let expressOasGenerator;
 if (process.env.TEST_MODE) {
@@ -29,7 +31,6 @@ const http = require('http');
 const https = require('https');
 const swaggerUi = require('swagger-ui-express');
 
-require("dotenv").config();
 
 const httpPort = process.env.PORT || 5656;
 const httpsPort = process.env.PORT_HTTPS || 5657;
