@@ -284,8 +284,7 @@ if (cacheAsync) {
 let discordVideo = [".gif", ".mp4", ".webm"];
 
 async function classify(url, req, res) {
-    console.log(req.url + ":" + url);
-    const hash = url;
+    console.info("Classifying", url);
     try {
         let response = await nsfwModel.classify(url)
         if (response.status) {
@@ -295,7 +294,7 @@ async function classify(url, req, res) {
     } catch (err) {
         res.status(500);
         res.json({error: "Internal Error"});
-        console.log(err);
+        console.err(err);
     }
 }
 
@@ -725,10 +724,11 @@ function v2() {
 }
 
 v2();
-app.get("/api/json/test", (req, res) => {
+app.get("/api/json/test", async (req, res) => {
     let s = {}
     s.yes = "yes";
-    res.json(s);
+    await classify("https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png", req, res);
+
 });
 app.get("/api/json/graphical", (req, res) => {
     res.json(nsfwModel.report);

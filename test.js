@@ -7,7 +7,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const Path = require("path");
 const Fs = require("fs");
-
+const host = "http://localhost:5656" || process.env.HOST;
 const ignoreError = process.env.IGNORE_ERROR
 const scanList = [
     "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
@@ -78,7 +78,7 @@ async function test5() {
             console.log("\n\n");
             const buf = Buffer.from(fs.readFileSync(Path.resolve(__dirname, file), "binary"), "binary");
             const options = {
-                url: "http://localhost:5656/api/json/graphical/classification",
+                url: host + "/api/json/graphical/classification",
                 method: 'post',
                 headers: {'content-type': 'application/octet-stream'},
                 data: buf
@@ -119,7 +119,7 @@ async function test4() {
     try {
         console.log("\n\n");
         console.log("Test 4");
-        const response = await axios.get('http://localhost:5656/api/json/test');
+        const response = await axios.get(host + '/api/json/test');
         console.log(response.data);
         printMemoryUsage();
         test5();
@@ -133,7 +133,7 @@ async function test3() {
     try {
         console.log("\n\n");
         console.log("Test 3");
-        const response = await axios.get('http://localhost:5656/api/json/graphical');
+        const response = await axios.get(host + '/api/json/graphical');
         const data = response.data;
         console.log("```js");
         console.log(data);
@@ -154,7 +154,7 @@ async function test2() {
         for (const url of scanList) {
             //http
             try {
-                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const response = await axios.get(host + '/api/json/graphical/classification/' + url);
                 const data = response.data;
                 console.log("```js");
                 console.log("Source: " + url);
@@ -172,7 +172,7 @@ async function test2() {
             }
             //cache in action
             try {
-                const response = await axios.get('http://localhost:5656/api/json/graphical/classification/' + url);
+                const response = await axios.get(host + '/api/json/graphical/classification/' + url);
                 const data = response.data;
                 delete data.data;
                 console.log(data);
@@ -190,7 +190,7 @@ async function test1() {
     try {
         console.log("\n\n");
         console.log("Test 1");
-        const response = await axios.get('http://localhost:5656/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
+        const response = await axios.get(host + '/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
         console.error("Should fail but didn't");
         exit();
     } catch (error) {
