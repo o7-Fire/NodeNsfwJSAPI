@@ -13,7 +13,13 @@ const scanList = [
     "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png",
     "https://github.com/o7-Fire/General/raw/master/AI/Logo/Accomplish-o7.png",
     "https://cdn.discordapp.com/attachments/921595377923268708/1000552203708272730/speed.gif",
-    "https://media.discordapp.net/attachments/921595377923268708/1000018437130702879/caption.gif"
+    "https://media.discordapp.net/attachments/921595377923268708/1000018437130702879/caption.gif",
+    //302 Test
+    "https://random.imagecdn.app/224/224",
+    "https://picsum.photos/224",
+    //Self Test
+    "TEST_URL",
+
 ];
 const fileTest = {}
 fileTest["pics/sexy.png"] = "https://nsfw-demo.sashido.io/sexy.png";
@@ -78,7 +84,7 @@ async function test5() {
             console.log("\n\n");
             const buf = Buffer.from(fs.readFileSync(Path.resolve(__dirname, file), "binary"), "binary");
             const options = {
-                url: host + "/api/json/graphical/classification",
+                url: host + "/api/v2/classification",
                 method: 'post',
                 headers: {'content-type': 'application/octet-stream'},
                 data: buf
@@ -119,7 +125,7 @@ async function test4() {
     try {
         console.log("\n\n");
         console.log("Test 4");
-        const response = await axios.get(host + '/api/json/test');
+        const response = await axios.get(host + '/api/v2/test');
         console.log(response.data);
         printMemoryUsage();
         test5();
@@ -133,7 +139,7 @@ async function test3() {
     try {
         console.log("\n\n");
         console.log("Test 3");
-        const response = await axios.get(host + '/api/json/graphical');
+        const response = await axios.get(host + '/api/v2/categories');
         const data = response.data;
         console.log("```js");
         console.log(data);
@@ -149,12 +155,14 @@ async function test3() {
 async function test2() {
     console.log("\n\n");
     console.log("Test 2");
-    for (let i = 0; i < 10; i++) {
-        console.log("Iteration: " + i);
-        for (const url of scanList) {
+
+    for (const url of scanList) {
+        console.log("Trying:", url);
+        for (let i = 0; i < 10; i++) {
+            console.log("Iteration: " + i);
             //http
             try {
-                const response = await axios.get(host + '/api/json/graphical/classification/' + url);
+                const response = await axios.get(host + '/api/v2/classification/' + url);
                 const data = response.data;
                 console.log("```js");
                 console.log("Source: " + url);
@@ -168,17 +176,16 @@ async function test2() {
                 console.log(data.model.url);
             } catch (error) {
                 console.error(error);
-                exit();
+                break;
             }
             //cache in action
             try {
-                const response = await axios.get(host + '/api/json/graphical/classification/' + url);
+                const response = await axios.get(host + '/api/v2/classification/' + url);
                 const data = response.data;
                 delete data.data;
                 console.log(data);
             } catch (error) {
                 console.error(error);
-                exit();
             }
         }
     }
@@ -190,7 +197,7 @@ async function test1() {
     try {
         console.log("\n\n");
         console.log("Test 1");
-        const response = await axios.get(host + '/api/json/graphical/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
+        const response = await axios.get(host + '/api/v2/classification/https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown');
         console.error("Should fail but didn't");
         exit();
     } catch (error) {
@@ -210,6 +217,7 @@ async function prep() {
     await nsfwModel.init();
     console.log("Ready");
     process.env.TEST_MODE = true;
+    process.env.ALLOW_ALL_HOSTS = true;
     const assad = require("./index.js");
     test1();
 }

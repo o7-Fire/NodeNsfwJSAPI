@@ -301,13 +301,13 @@ async function classify(url, req, res) {
 
 const docsFolder = process.cwd() + "/src/";
 
+//TODO refactor this to somewhere else
 function v2() {
+    const TEST_URL = "https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png";
     const prefix = "/api/v2/";
     const v2RouteDocs = {};
-    app.get(prefix + "test", (req, res) => {
-        let s = {}
-        s.yes = "yes";
-        res.json(s);
+    app.get(prefix + "test", async (req, res) => {
+        await classify(TEST_URL, req, res);
     });
     v2RouteDocs[prefix + "test"] = {
         "get": {
@@ -583,9 +583,20 @@ function v2() {
             }
         }
     }
-    const urlClassificationLength = prefix + "classification/".length;
+    const urlClassificationLength = (prefix + "classification/").length;
     app.get(prefix + "classification/*", async (req, res) => {
         let url = req.url.substring(urlClassificationLength);
+        if (url === "TEST_URL") {
+            //check if header have browser info
+            if (req.headers["user-agent"]) {
+                //check if chrome, firefox, safari, opera, edge
+                if (req.headers["user-agent"].includes("Chrome") || req.headers["user-agent"].includes("Firefox") || req.headers["user-agent"].includes("Safari") || req.headers["user-agent"].includes("Opera") || req.headers["user-agent"].includes("Edge")) {
+                    res.redirect(prefix + "classification/" + TEST_URL);
+                    return res.end();
+                }
+            }
+            url = TEST_URL;
+        }
         try {
             new URL(url);
         } catch (e) {
@@ -593,23 +604,6 @@ function v2() {
         }
         if (!url) {
             return res.status(400).json({error: "expected an url but got emptiness", status: 400});
-        }
-        let body = {};
-        let allowed = true;
-        body.error = "Only ended with media extension";
-        let code = 406;
-        if (
-            !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
-        ) {
-            code = 415;
-            body.error = "Only allow png, jpeg, bmg, jpg, gif";
-            allowed = false;
-        }
-
-        if (!allowed) {
-            body.status = code;
-            res.status(code).json(body);
-            return;
         }
         await classify(url, req, res);
     });
@@ -725,124 +719,7 @@ function v2() {
 }
 
 v2();
-app.get("/api/json/test", async (req, res) => {
-    let s = {}
-    s.yes = "yes";
-    await classify("https://cdn.discordapp.com/attachments/997389718163566652/1000542968052207708/unknown.png", req, res);
 
-});
-app.get("/api/json/graphical", (req, res) => {
-    res.json(nsfwModel.report);
-});
-app.get("/api/json/graphical/classification/hash", (req, res) => {
-    res.send("Send blob/binary of hashed image using SHA-256 to get cached response, return 404 if not found, or /api/json/graphical/classification/hash/{sha256-hex} ")
-});
-app.get("/api/json/allowed/hosts", (req, res) => {
-    res.json(nsfwModel.hostsFilter());
-});//
-app.post("/api/json/graphical/classification/hash", rawParser, async (req, res) => {
-    const key = req.body.toString("hex");
-    if (!!(await hashCache.get(key))) {
-        //res.set(cache.get(key))
-        const cache = await hashCache.get(key);
-        cache.hex = key;
-        res.json(cache).status(200);
-        return res.end()
-    }
-    res.json({hex: key}).status(404);
-    res.end()
-})
-app.get("/api/json/graphical/classification/hash/:hash", async (req, res) => {
-    const key = req.params.hash;
-    if (!!(await hashCache.get(key))) {
-        //res.set(cache.get(key))
-        const cache = await hashCache.get(key);
-        cache.hex = key;
-        res.json(cache).status(200);
-        return res.end()
-    }
-
-    res.json({hex: key}).status(404);
-    res.end()
-});
-
-app.post("/api/json/graphical/classification", rawParser, async (req, res) => {
-    //check if its actually a Buffer
-    if (!Buffer.isBuffer(req.body)) {
-        res.status(400);
-        res.json({error: "Invalid request"});
-        return res.end();
-    }
-    if (req.body.length < 8) {//tampered ??????
-        return res.json({
-            error: "less than 8 byte, sus"
-        }).status(406);
-    }
-
-    let dig = {error: "not found", status: 404}
-    try {
-        dig = await nsfwModel.digest(req.body);
-    } catch (e) {
-        dig.error = e.toString()
-        dig.status = 500
-    }
-    if (!dig.error) {
-        res.json(dig).status(201);
-        return res.end()
-    }
-    res.json(dig).status(dig.status);
-    res.end()
-})
-const urlClassificationLength = "/api/json/graphical/classification/".length;
-app.get("/api/json/graphical/classification/*", async (req, res) => {
-    let url = req.url.substring(urlClassificationLength);
-    if (!url) {
-        return res.status(400).json({error: "expected an url but got emptiness", status: 400});
-    }
-    let body = {};
-    let allowed = true;
-    body.error = "Not allowed/Discord media only or ended with media extension";
-    let code = 406;
-    if (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/")) {//trust discord
-        for (const ext of discordVideo) {
-            if (url.endsWith(ext)) {
-                allowed = process.env.SUPPORT_GIF_CLASSIFICATION;
-                if (!allowed && (url.startsWith("https://cdn.discordapp.com/") || url.startsWith("https://media.discordapp.net/"))) {
-                    url = url + "?format=png";//sneed
-                    url = url.replace(
-                        "https://cdn.discordapp.com/",
-                        "https://media.discordapp.net/"
-                    );
-                    allowed = true;
-                    break;
-                }
-            }
-        }
-
-
-    } else {
-
-        if (
-            !(url.endsWith(".png") || url.endsWith(".jpeg") || url.endsWith(".bmg") || url.endsWith(".jpg") || url.endsWith(".gif"))
-        ) {
-            code = 415;
-            body.error = "Only allow https://cdn.discordapp.com/, https://media.discordapp.net/ or png, jpeg, bmg, jpg, gif";
-            allowed = false;
-        }
-        if (url.includes("?width=") || url.includes("?height=")) {
-            code = 415;
-            body.error = "Width and height parameters are not allowed";
-            allowed = false;
-        }
-    }
-
-    if (!allowed) {
-        body.status = code;
-        res.status(code).json(body);
-        return;
-    }
-    await classify(url, req, res);
-});
 let docs = require(docsFolder + 'generated_v3.json');
 const os = require("os");
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(docs, {

@@ -315,25 +315,49 @@ module.exports = {
         }
         let pic;
         let result = {};
-
-        try {
-            const host = new URL(url).hostname;
-            const allowedHost = hostsFilter().allowedHost;
-            const blockedHost = hostsFilter().blockedHost;
-            const allowedAll = hostsFilter().allowedAll;
-            if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
-                pic = await axios.get(url, {
-                    responseType: "arraybuffer",
-                    maxContentLength: 15e7
-                });
-            } else {
-                return {error: "Host is blocked", status: 403}
+        let redirectCounter = 0;
+        while (true) {
+            if (redirectCounter > 5) {
+                return {error: "Too many redirects", status: 400};
             }
-        } catch (err) {
-            result.error = "Download Image Error for \"" + url + "\": " + err.toString();
-            console.error(result.error);
-            result.status = err.response.status;
-            return result;
+            try {
+                const host = new URL(url).hostname;
+                const allowedHost = hostsFilter().allowedHost;
+                const blockedHost = hostsFilter().blockedHost;
+                const allowedAll = hostsFilter().allowedAll;
+                if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
+                    pic = await axios.get(url, {
+                        responseType: "arraybuffer",
+                        maxContentLength: 15e7,
+                        maxRedirects: 0,
+                        validateStatus: function (status) {
+                            return status >= 200 && status < 400; // default
+                        }
+                    });
+                    //check if 3XX and location header
+                    if (pic.status >= 300 && pic.status < 400 && pic.headers.location) {
+                        //check if start with http
+                        if (pic.headers.location.startsWith("http")) {
+                            url = pic.headers.location;
+                            redirectCounter++;
+                            continue;
+                        } else {
+                            url = new URL(url).origin + pic.headers.location;
+                        }
+                        redirectCounter++;
+                        continue;
+                    } else {
+                        break;
+                    }
+                } else {
+                    return {error: "Host is blocked", status: 403}
+                }
+            } catch (err) {
+                result.error = "Download Image Error for \"" + url + "\": " + err.toString();
+                console.error(result.error);
+                result.status = err.response.status;
+                return result;
+            }
         }
 
         try {
