@@ -18,6 +18,7 @@ if (!haveAVX) {
 const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
+
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
     //check if end with /
     if (!process.env.CACHE_IMAGE_HASH_FILE.endsWith("/")) {
@@ -48,7 +49,8 @@ if (process.env.GPU) {
     tf = require("@tensorflow/tfjs-node");
 }
 nsfw = require("nsfwjs");
-tf.enableProdMode(); // enable on production
+if (process.env.TEST_MODE) tf.enableDebugMode();
+else tf.enableProdMode(); // enable on production
 
 
 let model;
