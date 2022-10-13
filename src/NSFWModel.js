@@ -373,7 +373,7 @@ module.exports = {
             } catch (err) {
                 result.error = "Download Image Error for \"" + url + "\": " + err.toString();
                 console.error(result.error);
-                result.status = err.response?.status || 500;
+                result.status = err.response ? err.response.status : 500;
                 return result;
             }
         }
