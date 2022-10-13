@@ -74,7 +74,10 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 function isCI() {
     //check if GitHub actions
-    return process.env.GITHUB_ACTIONS === "true"
+    //username check
+    if (process.env.USERNAME === "runner") return true;
+
+    return false;
 }
 
 async function test5() {
