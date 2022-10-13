@@ -72,14 +72,7 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 }
 
-function isCI() {
-    //check if GitHub actions
-    //username check
-    if (process.env.USERNAME === "runner") return true;
-
-    return false;
-}
-
+const isCI = require('is-ci')
 async function test5() {
     console.log("Test 5");
     /*
@@ -141,7 +134,7 @@ async function test5() {
 //stress test
 async function test6() {
     console.log("Test 6");
-    if (isCI()) return;//Download Image Error for "https://picsum.photos/224": Error: Client network socket disconnected before secure TLS connection was established
+    if (isCI) return;//Download Image Error for "https://picsum.photos/224": Error: Client network socket disconnected before secure TLS connection was established
     try {
         const result = [];
         for (let i = 0; i < 1e3; i++) {
