@@ -21,7 +21,7 @@ jobs:
 
       - name: Approve patch and minor updates
         if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor'}}
-        run: gh pr review $PR_URL --approve -b "I'm **approving** this pull request because **it includes a patch or minor update**"
+        run: gh pr review $PR_URL --approve -b "This PR is approved by **Osama**"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -36,7 +36,7 @@ jobs:
       - name: Comment on major updates of non-development dependencies
         if: ${{steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major' && steps.dependabot-metadata.outputs.dependency-type == 'direct:production'}}
         run: |
-          gh pr comment $PR_URL --body "This PR is not covered by **Obama Care**"
+          gh pr comment $PR_URL --body "This PR is not covered by **Obama Care** please go through the nearest **Obama Care** office to get it approved"
           gh pr edit $PR_URL --add-label "requires-manual-qa"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
