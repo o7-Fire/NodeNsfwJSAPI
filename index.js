@@ -37,7 +37,7 @@ const httpsPort = process.env.PORT_HTTPS || 5657;
 
 const nsfwModel = require("./src/NSFWModel");
 const hashCache = {};
-const lastAccessed = {};
+let lastAccessed = {};
 hashCache.get = async function (key) {
     const startTime = Date.now();
     const value = this[key];
@@ -61,15 +61,20 @@ hashCache.set = function (key, value) {
     if (Math.random() < 0.1) {
         const keys = Object.keys(this);
         if (keys.length > maxSize) {
+            const dontDelete = ['get', 'set', 'clear'];
             //don't delete the first 100 keys, sorted by how recently they were accessed
             keys.sort((a, b) => lastAccessed[a] - lastAccessed[b]);
             console.log("Clearing " + keys.length - maxSize + " local cache");
             //format millis to date
-            console.log("Latest accessed key: " + new Date(lastAccessed[keys[keys.length - 1]]));
+            const millis = lastAccessed[keys[keys.length - 1]];
+            console.log("Latest accessed key: " + new Date(millis));
             for (let i = 0; i < keys.length - maxSize; i++) {
+                if (dontDelete.includes(keys[i])) continue;
                 delete this[keys[i]];
             }
             console.log("Local cache size: " + Object.keys(this).length);
+            //clear lastAccessed
+            lastAccessed = {};
         }
     }
     this[key] = value;
@@ -130,6 +135,11 @@ hashCache.set("yes", "yes");
 
 //format "redis[s]://[[username][:password]@][host][:port][/db-number]", e.g 'redis://alice:foobared@awesome.redis.server:6380'
 let cacheAsync;
+const local = {
+    get: hashCache.get,
+    set: hashCache.set,
+    clear: hashCache.clear
+};
 if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER_CONFIGURATION_ENDPOINT) {
     cacheAsync = async function () {
         try {
@@ -170,10 +180,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
                 console.error('Redis Client Error', "Redis is not working 'GET key' returned " + value, "expected 'value'");
                 return;
             }
-            const local = {
-                get: hashCache.get,
-                set: hashCache.set
-            };
+
             hashCache.get = async function (key) {
                 const startTime = Date.now();
                 let h = await local.get(key);
@@ -226,10 +233,7 @@ if (process.env.REDIS_URL || process.env.REDIS_HOST || process.env.REDIS_CLUSTER
 
             await mc.set('key', 'value');
             await mc.get('key');
-            const local = {
-                get: hashCache.get,
-                set: hashCache.set
-            };
+
             hashCache.get = async function (key) {
                 let value = await local.get(key);
                 if (!value) {
@@ -295,7 +299,7 @@ async function classify(url, req, res) {
     } catch (err) {
         res.status(500);
         res.json({error: "Internal Error"});
-        console.err(err);
+        console.error(err);
     }
 }
 

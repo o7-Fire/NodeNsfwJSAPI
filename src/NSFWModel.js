@@ -18,7 +18,8 @@ if (!haveAVX) {
 const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
-
+const AsyncLock = require('async-lock');
+const tfLock = new AsyncLock();
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
     //check if end with /
     if (!process.env.CACHE_IMAGE_HASH_FILE.endsWith("/")) {
@@ -49,11 +50,11 @@ if (process.env.GPU) {
     tf = require("@tensorflow/tfjs-node");
 }
 nsfw = require("nsfwjs");
-if (process.env.TEST_MODE) tf.enableDebugMode();
-else tf.enableProdMode(); // enable on production
+tf.enableProdMode(); // enable on production
 
 
-let model;
+let nsfwModel;
+
 let currentModel = {
     url: "Default",
     size: "Default"
@@ -115,7 +116,10 @@ function assignReport(t1, t2, reportPrediction) {
 }
 
 async function classify(image) {
-    const prediction = await model.classify(image);
+    if (!nsfwModel) {
+        throw new Error("Model not loaded");
+    }
+    const prediction = await nsfwModel.classify(image);
     let reportPrediction = {};
     let t1 = prediction[0];
     let t2 = prediction[1];
@@ -168,7 +172,7 @@ function getImageType(content) {
 function hostsFilter() {
     const allowedHost = (process.env.ALLOWED_HOST || "cdn.discordapp.com;media.discordapp.net;github.com").split(";");
     const blockedHost = (process.env.BLOCKED_HOST || "localhost;127.0.0.1;::1").split(";");
-    const allowedAll = process.env.ALLOW_ALL_HOSTS === "true";
+    const allowedAll = !!process.env.ALLOW_ALL_HOST;
     return {
         allowedHost: allowedHost,
         blockedHost: blockedHost,
@@ -190,7 +194,9 @@ function hashData(data) {
     data = data.replace(/^\.+|\.+$/g, '');
     return data;
 }
+
 let hashCache = undefined;
+let averageTimeToProcess = 0;
 module.exports = {
     report: report,
     hostsFilter: hostsFilter,
@@ -200,14 +206,14 @@ module.exports = {
         const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
         // Load the model in the memory only once!
-        if (!model) {
+        if (!nsfwModel) {
             try {
                 //model_url, { size: parseInt(shape_size) }
 
-                if (!model_url || !shape_size) model = await nsfw.load();
+                if (!model_url || !shape_size) nsfwModel = await nsfw.load();
                 else {
-                    model = {};
-                    model = await nsfw.load(model_url, {size: parseInt(shape_size)});
+                    nsfwModel = {};
+                    nsfwModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
                     currentModel.size = shape_size;
                     currentModel.url = model_url;
                     console.info("Loaded: " + model_url + ":" + shape_size);
@@ -280,11 +286,19 @@ module.exports = {
         } catch (e) {
             return {error: e.toString(), status: 415}
         }
-
+        //sleep
+        if (process.env.EXPERIMENTAL_RATELIMIT) {
+            await new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve();
+                }, averageTimeToProcess / 2);
+            });
+        }
         const startTime = Date.now();
+
         if (gif) {
             if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
-            reportPrediction.data = await model.classifyGif(data);
+            reportPrediction.data = await nsfwModel.classifyGif(data);
         } else {
             image = await tf.node.decodeImage(data, 3);
             reportPrediction.data = await classify(image);
@@ -296,11 +310,15 @@ module.exports = {
         reportPrediction.timestamp = new Date().getTime();
         reportPrediction.hex = hex;
         reportPrediction.time = Date.now() - startTime;
-        if (process.env.TEST_MODE) reportPrediction.cache = "miss";
+        if (process.env.TEST_MODE) {
+            reportPrediction.cache = "miss";
+            reportPrediction.average_time = averageTimeToProcess;
+        }
         //set cache
         if (hashCache) {
             hashCache.set(hex, reportPrediction);
         }
+        averageTimeToProcess = (averageTimeToProcess + reportPrediction.time) / 2;
         return reportPrediction;
     },
 
@@ -371,6 +389,6 @@ module.exports = {
         return result;
     },
     available: function () {
-        return model !== undefined;
+        return nsfwModel !== undefined;
     }
 };

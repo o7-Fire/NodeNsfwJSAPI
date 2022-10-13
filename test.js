@@ -74,51 +74,85 @@ async function downloadFile(fileUrl, outputLocationPath) {
 
 async function test5() {
     console.log("Test 5");
-    for (let i = 0; i < 10; i++) {//cache in action
-        console.log("Major Success");
-        process.exit(0);
-    }
-    for (let file in fileTest) {
-        try {
-            await downloadFile(fileTest[file], file)
-            console.log("\n\n");
-            const buf = Buffer.from(fs.readFileSync(Path.resolve(__dirname, file), "binary"), "binary");
-            const options = {
-                url: host + "/api/v2/classification",
-                method: 'post',
-                headers: {'content-type': 'application/octet-stream'},
-                data: buf
-            };
-            const sha256 = crypto.createHash('sha256');
-            sha256.update(buf);
-            const digest = sha256.digest();
-            const response = await axios(options);//help axios don't want to receive post data response
-            try {
-                console.log(response.status)
-                console.log(response.headers)
-                console.log(response.data)
-            } catch (e) {
+    /*
+    try {
+        for (let i = 0; i < 10; i++) {//cache in action
+            for (let file in fileTest) {
+                try {
+                    await downloadFile(fileTest[file], file)
+                    console.log("\n\n");
+                    const buf = Buffer.from(fs.readFileSync(Path.resolve(__dirname, file), "binary"), "binary");
+                    const options = {
+                        url: host + "/api/v2/classification",
+                        method: 'post',
+                        headers: {'content-type': 'application/octet-stream'},
+                        data: buf
+                    };
+                    const sha256 = crypto.createHash('sha256');
+                    sha256.update(buf);
+                    const digest = sha256.digest();
+                    const response = await axios(options);//help axios don't want to receive post data response
+                    try {
+                        console.log(response.status)
+                        console.log(response.headers)
+                        console.log(response.data)
+                    } catch (e) {
+                    }
+                    options.url += "/hash";
+                    options.data = digest;
+                    const hashRes = await axios(options);
+                    if (hashRes.status !== 200) {
+                        throw new Error("Uncached: " + file)
+                    }
+                    const hex = digest.toString('hex');
+                    options.url += "/" + hex;
+                    options.method = 'get';
+                    const hashRes2 = await axios(options);
+                    if (hashRes2.status !== 200) {
+                        throw new Error("Uncached: " + options.hex)
+                    }
+
+                } catch (error) {
+                    console.error(error);
+                    exit();
+                }
             }
-            options.url += "/hash";
-            options.data = digest;
-            const hashRes = await axios(options);
-            if (hashRes.status !== 200) {
-                throw new Error("Uncached: " + file)
-            }
-            const hex = digest.toString('hex');
-            options.url += "/" + hex;
-            options.method = 'get';
-            const hashRes2 = await axios(options);
-            if (hashRes2.status !== 200) {
-                throw new Error("Uncached: " + options.hex)
-            }
-        } catch (error) {
-            console.error(error);
-            exit();
         }
+    } catch (error) {
+        console.error(error);
+        exit();
     }
+
+     */
+    console.log("Major Success");
+    test6();
     printMemoryUsage();
 
+}
+
+//stress test
+async function test6() {
+    console.log("Test 6");
+    try {
+        const result = [];
+        for (let i = 0; i < 1e3; i++) {
+            axios.get(host + "/api/v2/classification/https://picsum.photos/224").then((res) => {
+            }).catch((e) => {
+                console.error(e);
+                exit(1);
+            });
+            //if this is the last wait
+            if (i === 1e4 - 1) {
+                console.log("Last wait");
+                const data = await axios.get(host + "/api/v2/classification/https://picsum.photos/224")
+                console.log(data.data);
+            }
+        }
+        printMemoryUsage();
+    } catch (e) {
+        console.error(e);
+        exit(1);
+    }
 }
 
 async function test4() {
