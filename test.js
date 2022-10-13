@@ -251,7 +251,7 @@ async function prep() {
     await nsfwModel.init();
     console.log("Ready");
     process.env.TEST_MODE = true;
-    process.env.ALLOW_ALL_HOSTS = true;
+    process.env.ALLOW_ALL_HOST = true;
     const assad = require("./index.js");
     test1();
 }
