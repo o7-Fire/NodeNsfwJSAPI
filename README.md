@@ -1,11 +1,7 @@
 ## NSFW API Detection with NodeJS
 
-### Host
 [![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
 
-- Alternatively you can use https://api.mindustry.me/ or run your own using our
-  sponsor [Yeet Hosting:tm:](https://mindustry.me/)
-- or try the AWS CDK: https://github.com/Itzbenz/node-nsfw-js-aws-cdk.git
 
 ###  Quickstart
 
