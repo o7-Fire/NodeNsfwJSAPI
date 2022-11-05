@@ -5,6 +5,7 @@ const {healthAuth} = require('../middlewares/auth');
 
 //Only cache GET requests
 module.exports = (app) => {
+
     app.get('/api/v3/health', healthAuth, v3Controller.health);
     app.get('/api/v3/meta/categories', v3Controller.getCategories);
     app.get('/api/v3/meta/hosts', v3Controller.getHosts);
