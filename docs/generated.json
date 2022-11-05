@@ -1,0 +1,245 @@
+{
+  "definitions": {},
+  "info": {
+    "title": "node-nsfw-detector-api",
+    "version": "0.2.2",
+    "license": {
+      "name": "MIT"
+    },
+    "description": "Specification JSONs: [v2](/api-spec/v2), [v3](/api-spec/v3).\n\nNode.js + Express API for classifying images"
+  },
+  "paths": {
+    "/": {
+      "head": {
+        "summary": "/",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      },
+      "get": {
+        "summary": "/",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "304": {}
+        },
+        "tags": []
+      }
+    },
+    "/api/v3/health": {
+      "get": {
+        "summary": "/api/v3/health",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "example": "SUCCESS"
+                },
+                "error_code": {
+                  "type": "string",
+                  "example": ""
+                },
+                "message": {
+                  "type": "string",
+                  "example": "OK"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "Digital": {
+                          "type": "number",
+                          "example": 0.9983923098770902
+                        },
+                        "Neutral": {
+                          "type": "number",
+                          "example": 0.9990656971931458
+                        },
+                        "Drawing": {
+                          "type": "number",
+                          "example": 0.0006733873160555959
+                        },
+                        "Porn": {
+                          "type": "number",
+                          "example": 0.00019924217485822737
+                        },
+                        "Hentai": {
+                          "type": "number",
+                          "example": 0.00004998780423193239
+                        },
+                        "Sexy": {
+                          "type": "number",
+                          "example": 0.00001167691243608715
+                        }
+                      }
+                    },
+                    "model": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "example": "Default"
+                        },
+                        "size": {
+                          "type": "string",
+                          "example": "Default"
+                        }
+                      }
+                    },
+                    "timestamp": {
+                      "type": "number",
+                      "example": 1667626309493
+                    },
+                    "hex": {
+                      "type": "string",
+                      "example": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1"
+                    },
+                    "time": {
+                      "type": "number",
+                      "example": 410
+                    },
+                    "cache": {
+                      "type": "string",
+                      "example": "miss"
+                    },
+                    "average_time": {
+                      "type": "number",
+                      "example": 0
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [],
+        "produces": [
+          "application/json"
+        ]
+      }
+    },
+    "/api/v3/meta/categories": {
+      "get": {
+        "summary": "/api/v3/meta/categories",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/meta/hosts": {
+      "get": {
+        "summary": "/api/v3/meta/hosts",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/meta/hosts/{host}": {
+      "get": {
+        "summary": "/api/v3/meta/hosts/{host}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "host",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/classification/{url}": {
+      "get": {
+        "summary": "/api/v3/classification/{url}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/classification": {
+      "post": {
+        "summary": "/api/v3/classification",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/hash/{url}": {
+      "get": {
+        "summary": "/api/v3/hash/{url}",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "url",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "/api/v3/hash": {
+      "post": {
+        "summary": "/api/v3/hash",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    },
+    "*": {
+      "get": {
+        "summary": "*",
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {},
+        "tags": []
+      }
+    }
+  },
+  "swagger": "2.0",
+  "tags": []
+}

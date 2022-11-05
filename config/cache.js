@@ -37,15 +37,15 @@ function selfTestAsync(cache) {
 const inMemoryCache = () => {
     const hashCache = {};
     let lastAccessed = {};
-    hashCache.name = "In-Memory"
-    hashCache.get = async function (key) {
+    hashCache.name = () => "In Memory";
+    hashCache.get = function (key) {
         const startTime = Date.now();
         const value = this[key];
         if (value) {
             lastAccessed[key] = Date.now();
             value.time = Date.now() - startTime;
             value.hex = key;
-            if (process.env.TEST_MODE) value.cache = this.name;
+            if (process.env.TEST_MODE) value.cache = this.name();
         }
         return value;
     }
@@ -80,7 +80,7 @@ const inMemoryCache = () => {
         for (const key in this) {
             // this check can be safely omitted in modern JS engines
             // if (obj.hasOwnProperty(key))
-            if (typeof this[key] === "function") continue;//don't delete my function
+            if (typeof this[key] === "function") continue;//don't delete my function and name prop
             delete this[key];
         }
     }
@@ -108,13 +108,13 @@ const fileCache = () => {
         console.error(err);
         process.exit(1);
     }
-    fileCache.name = "File";
+    fileCache.name = () => "File";
     fileCache.get = async function (key) {
         const startTime = Date.now();
         const value = JSON.parse(fs.readFileSync(fileCachePath + "/" + key, 'utf8'));
         value.time = Date.now() - startTime;
         value.hex = key;
-        if (process.env.TEST_MODE) value.cache = this.name;
+        if (process.env.TEST_MODE) value.cache = this.name();
         return value;
     }
     fileCache.set = function (key, value) {
@@ -163,13 +163,13 @@ const redisClient = () => {
         console.error('Redis Client Error', err);
     });
     let redisCache = {};
-    redisCache.name = "Redis";
+    redisCache.name = () => "Redis";
     redisCache.get = async function (key) {
         const startTime = Date.now();
         const value = JSON.parse(await client.get(key));
         value.time = Date.now() - startTime;
         value.hex = key;
-        if (process.env.TEST_MODE) value.cache = this.name;
+        if (process.env.TEST_MODE) value.cache = this.name();
         return value;
     }
     redisCache.set = async function (key, value) {
@@ -192,13 +192,13 @@ const memjsCache = () => {
         password: process.env.MEMCACHED_PASSWORD
     });
     const memCache = {};
-    memCache.name = "Memcached";
+    memCache.name = () => "Memcached";
     memCache.get = async function (key) {
         const startTime = Date.now();
         const value = JSON.parse(await mc.get(key));
         value.time = Date.now() - startTime;
         value.hex = key;
-        if (process.env.TEST_MODE) value.cache = this.name;
+        if (process.env.TEST_MODE) value.cache = this.name();
         return value;
     }
     memCache.set = async function (key, value) {
@@ -215,7 +215,7 @@ const memjsCache = () => {
     return memCache;
 }
 
-const cache = () => {
+function multilayer() {
     let cache = {};
     //MULTILAYER CACHE LESSS GOOOOO
     const cacheType = (process.env.CACHE_TYPE ? process.env.CACHE_TYPE.split(",") : undefined) || ["InMemory"];
@@ -223,7 +223,6 @@ const cache = () => {
         console.error("No CACHE_TYPE specified");
         process.exit(1);
     }
-
 
     let layer = 0;
     for (const type of cacheType) {
@@ -247,6 +246,7 @@ const cache = () => {
         }
         //if one just return that one
         if (cacheType.length === 1) {
+            console.log("Single layer cache: " + type);
             return localCache;
         }
         console.log("Cache Layer " + layer + " is " + localCache.name);
@@ -301,6 +301,8 @@ const cache = () => {
     return cache;
 }
 
-module.exports = {
-    inMemoryCache, fileCache, redisClient, memjsCache, cache
-}
+const cache = multilayer();
+exports.get = cache.get;
+exports.set = cache.set;
+exports.clear = cache.clear;
+exports.name = cache.name;

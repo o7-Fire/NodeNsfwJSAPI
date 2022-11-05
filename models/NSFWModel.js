@@ -18,8 +18,7 @@ if (!haveAVX) {
 const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
-const AsyncLock = require('async-lock');
-const tfLock = new AsyncLock();
+
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
     //check if end with /
     if (!process.env.CACHE_IMAGE_HASH_FILE.endsWith("/")) {
@@ -65,7 +64,7 @@ if (supportGIF)
     console.log("SUPPORT_GIF_CLASSIFICATION")
 //Using n1 do 1 - (n1 - n2)
 //basically a matrix
-const report = {
+const categories = {
     Drawing: {
         Hentai: "Anime",
         Sexy: "ArtificialProvocative",
@@ -101,8 +100,8 @@ function assignReport(t1, t2, reportPrediction) {
     v1 = t1.probability;
     c2 = t2.className;
     v2 = t2.probability;
-    if (report[c1][c2]) {
-        let c3 = report[c1][c2];
+    if (categories[c1][c2]) {
+        let c3 = categories[c1][c2];
         if (c3.n1) {
             reportPrediction[c3.n1] = v1 - v2;
             reportPrediction[c3.n1] = 1 - reportPrediction[c3.n1];
@@ -180,6 +179,17 @@ function hostsFilter() {
     }
 }
 
+function hostAllowed(host) {
+    const filter = hostsFilter();
+    if (filter.blockedHost.includes(host)) {
+        return false;
+    }
+    if (filter.allowedAll) {
+        return true;
+    }
+    return filter.allowedHost.includes(host);
+}
+
 function hashData(data) {
     //if binary or buffer return hash
     if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
@@ -192,14 +202,18 @@ function hashData(data) {
     data = data.replace(/\.+/g, '.');
     //remove leading and trailing dots
     data = data.replace(/^\.+|\.+$/g, '');
-    return data;
+    //digest to hex
+    return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-let hashCache = undefined;
+const hashCache = require('../config/cache');
 let averageTimeToProcess = 0;
 module.exports = {
-    report: report,
-    hostsFilter: hostsFilter,
+    categories: categories,
+    hostsFilter,
+    hostAllowed,
+    hashData,
+    TEST_URL: process.env.TEST_URL || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/SIPI_Jelly_Beans_4.1.07.tiff/lossy-page1-256px-SIPI_Jelly_Beans_4.1.07.tiff.jpg",
     init: async function () {
 
         const model_url = process.env.NSFW_MODEL_URL;
@@ -224,13 +238,7 @@ module.exports = {
             }
         }
     },
-    setCaching(hashingFunc) {
-        //check for get and set method
-        if (typeof hashingFunc.get === "function" && typeof hashingFunc.set === "function") {
-            hashCache = hashingFunc;
-        }
-    },
-    hashData: hashData,
+
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
             return false;
@@ -340,10 +348,8 @@ module.exports = {
             }
             try {
                 const host = new URL(url).hostname;
-                const allowedHost = hostsFilter().allowedHost;
-                const blockedHost = hostsFilter().blockedHost;
-                const allowedAll = hostsFilter().allowedAll;
-                if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
+
+                if (hostAllowed(host)) {
                     pic = await axios.get(url, {
                         responseType: "arraybuffer",
                         maxContentLength: 15e7,
@@ -368,13 +374,16 @@ module.exports = {
                         break;
                     }
                 } else {
-                    return {error: "Host is blocked", status: 403}
+                    throw {
+                        message: "Host not allowed: " + host,
+                        status: 403
+                    };
                 }
             } catch (err) {
-                result.error = "Download Image Error for \"" + url + "\": " + err.toString();
-                console.error(result.error);
-                result.status = err.response ? err.response.status : 500;
-                return result;
+                result.message = "Download Image Error for \"" + url + "\": " + err.toString();
+                console.error(result.message);
+                result.status = err.response ? err.response.status : (err.status || 500);
+                throw result;
             }
         }
 
@@ -384,6 +393,7 @@ module.exports = {
             console.error("Prediction Error: ", err);
             result.error = err.toString();
             result.status = 500;
+            throw result;
         }
 
         return result;

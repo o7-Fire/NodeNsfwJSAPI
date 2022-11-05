@@ -1,7 +1,7 @@
 console.log("Test mode");
 require("dotenv").config();
 let startMemoryUsage = process.memoryUsage();
-const nsfwModel = require("./src/NSFWModel");
+const nsfwModel = require("./docs/NSFWModel");
 const axios = require('axios');
 const fs = require('fs');
 const crypto = require('crypto');

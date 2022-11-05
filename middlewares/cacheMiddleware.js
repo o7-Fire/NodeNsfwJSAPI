@@ -2,11 +2,6 @@ const cache = require('../config/cache');
 
 
 exports.cacheMiddleware = async function (req, res, next) {
-    //only cache GET requests
-    if (req.method !== 'GET') {
-        next();
-        return;
-    }
     const key = req.originalUrl;
     const value = await cache.get(key);
     if (value) {

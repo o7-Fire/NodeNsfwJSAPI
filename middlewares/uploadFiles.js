@@ -54,4 +54,4 @@ const uploadFile = (req, res, next) => {
     });
 };
 
-module.exports = {uploadTmp: uploadFile};
+module.exports = {uploadFile};
