@@ -1,5 +1,7 @@
 name: Dependabot Auto Merge
-on: pull_request_target
+on: 
+ pull_request_target:
+  types: [assigned, opened, synchronize, reopened]
 
 permissions:
   pull-requests: write
@@ -12,7 +14,7 @@ jobs:
     steps:
       - name: Dependabot metadata
         id: dependabot-metadata
-        uses: dependabot/fetch-metadata@v1.3.5
+        uses: dependabot/fetch-metadata@v1.3.5ya asu
       - name: Enable auto-merge for Dependabot PRs
         run: gh pr merge --auto --merge "$PR_URL"
         env:
