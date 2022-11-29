@@ -191,6 +191,7 @@ function hostAllowed(host) {
 }
 
 function hashData(data) {
+    if (!data) return data;
     //if binary or buffer return hash
     if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
         //if binary return hash
@@ -289,20 +290,29 @@ module.exports = {
 
     //must not throw error
     //so anyway I start throwing error
-    digest: async function (data, hex = undefined) {
+    digest: async function (data, url = undefined) {
+        let hexed = {
+            binaryHash: undefined,
+            stringHash: undefined
+        }
         if (hashCache) {
-            hex = this.hashData(hex || data);
-            const cached = await hashCache.get(hex);
+            hexed.binaryHash = this.hashData(data);
+            hexed.stringHash = this.hashData(url);
+            if (!hexed.stringHash) {
+                hexed.stringHash = hexed.binaryHash;
+            }
+            let cached = await hashCache.get(hexed.stringHash);
+            if (cached) {
+                return cached;
+            }
+            cached = await hashCache.get(hexed.binaryHash);
             if (cached) {
                 return cached;
             }
         }
         if (err) return {error: err.toString(), status: 500}
-        if (!hex) {
-            hex = this.hashData(data);
-        }
-        this.saveImage(data, hex).then(r => {
-            if(r) console.log("Saved image: " + hex);
+        this.saveImage(data, hexed.binaryHash).then(r => {
+            if (r) console.log("Saved image: " + hexed.binaryHash);
         });
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
@@ -338,7 +348,7 @@ module.exports = {
         image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
         reportPrediction.model = currentModel;
         reportPrediction.timestamp = new Date().getTime();
-        reportPrediction.hex = hex;
+        reportPrediction.hex = url ? hexed.stringHash : hexed.binaryHash;
         reportPrediction.time = Date.now() - startTime;
         if (process.env.TEST_MODE) {
             reportPrediction.cache = "miss";
@@ -346,7 +356,10 @@ module.exports = {
         }
         //set cache
         if (hashCache) {
-            await hashCache.set(hex, reportPrediction);
+            await hashCache.set(hexed.binaryHash, reportPrediction);
+            if (hexed.stringHash !== hexed.binaryHash) {
+                await hashCache.set(hexed.stringHash, reportPrediction);
+            }
         }
         averageTimeToProcess = (averageTimeToProcess + reportPrediction.time) / 2;
         return reportPrediction;

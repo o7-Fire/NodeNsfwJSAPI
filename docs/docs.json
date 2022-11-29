@@ -20,12 +20,22 @@
         "description": "Check if the API is up and running",
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-classification"
+                }
+              }
+            }
           },
           "500": {
             "description": "Internal Server Error"
           }
-        }
+        },
+        "tags": [
+          "v3"
+        ]
       }
     },
     "/api/v3/meta/categories": {
@@ -38,41 +48,667 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "class": {
-                        "type": "string"
-                      }
-                    }
-                  }
+                  "$ref": "#/components/schemas/v3-categories"
                 }
               }
             }
           }
-        }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/meta/hosts": {
+      "get": {
+        "summary": "Get Hosts",
+        "description": "Get all hosts",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-hosts"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/meta/hosts/{host}": {
+      "get": {
+        "summary": "Get Host",
+        "description": "Get a host",
+        "parameters": [
+          {
+            "name": "host",
+            "in": "path",
+            "description": "Host name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-host"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/classification/{url}": {
+      "get": {
+        "summary": "Classify URL",
+        "description": "Classify an image from a URL",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "path",
+            "description": "Image URL",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-classification"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/classification": {
+      "post": {
+        "summary": "Classify Image",
+        "description": "Classify an image",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/v3-classification-request"
+              },
+              "encoding": {
+                "files": {
+                  "style": "form",
+                  "explode": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-hash-responses"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/hash/{hash}": {
+      "get": {
+        "summary": "Get Hash",
+        "description": "Get a hash",
+        "parameters": [
+          {
+            "name": "hash",
+            "in": "path",
+            "description": "Hash",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-hash-response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "v3"
+        ]
+      }
+    },
+    "/api/v3/hash": {
+      "post": {
+        "summary": "Get Hashes",
+        "description": "Get hashes",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/v3-classification-request"
+              },
+              "encoding": {
+                "files": {
+                  "style": "form",
+                  "explode": true
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/v3-hash-responses"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "tags": [
+          "v3"
+        ]
       }
     }
   },
   "components": {
     "schemas": {
-      "classification": {
+      "v3-classification-item": {
         "type": "object",
+        "required": [
+          "data",
+          "model",
+          "hash",
+          "timestamp"
+        ],
         "properties": {
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
           "model": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "size": {
+                "type": "string"
+              }
+            }
+          },
+          "timestamp": {
+            "type": "number"
+          },
+          "average_time": {
+            "type": "number"
+          },
+          "time": {
+            "type": "number"
+          },
+          "hex": {
+            "type": "string"
+          },
+          "cache": {
             "type": "string"
           }
         }
       },
-      "cache": {
+      "v3-classification": {
         "type": "object",
         "properties": {
-          "model": {
+          "status": {
             "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/v3-classification-item"
+          }
+        }
+      },
+      "v3-classifications": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/v3-classification-item"
+            }
+          }
+        },
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": [
+            {
+              "data": {
+                "DigitalDrawing": 0.5557393133640289,
+                "Drawing": 0.7763245701789856,
+                "Neutral": 0.22058525681495667,
+                "Hentai": 0.0029570437036454678,
+                "Porn": 0.00007906507380539551,
+                "Sexy": 0.00005417200009105727
+              },
+              "model": {
+                "url": "Default",
+                "size": "Default"
+              },
+              "timestamp": 1669703169478,
+              "hex": "5a070e6f103b8adc28d81c4e4cadf4c9f5b02ebc1a1d2cfffa15459039d4ee28",
+              "time": 347,
+              "cache": "miss",
+              "average_time": 0
+            },
+            {
+              "data": {
+                "DigitalDrawing": 0.5557393133640289,
+                "Drawing": 0.7763245701789856,
+                "Neutral": 0.22058525681495667,
+                "Hentai": 0.0029570437036454678,
+                "Porn": 0.00007906507380539551,
+                "Sexy": 0.00005417200009105727
+              },
+              "model": {
+                "url": "Default",
+                "size": "Default"
+              },
+              "timestamp": 1669703169478,
+              "average_time": 0,
+              "time": 0,
+              "hex": "5a070e6f103b8adc28d81c4e4cadf4c9f5b02ebc1a1d2cfffa15459039d4ee28",
+              "cache": "In Memory"
+            }
+          ]
+        }
+      },
+      "v3-classification-request": {
+        "type": "object",
+        "properties": {
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "binary"
+            },
+            "nullable": true
+          }
+        }
+      },
+      "v3-categories": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": {
+            "Drawing": {
+              "Hentai": "Anime",
+              "Sexy": "ArtificialProvocative",
+              "Neutral": "DigitalDrawing"
+            },
+            "Neutral": {
+              "Drawing": "Digital",
+              "Sexy": {
+                "n1": "NaturallyProvocative"
+              },
+              "Porn": {
+                "n1": "Disturbing"
+              },
+              "Hentai": {
+                "n1": "SeductiveArt"
+              }
+            },
+            "Sexy": {
+              "Neutral": "SexuallyProvocative",
+              "Porn": "SeductivePorn"
+            },
+            "Porn": {
+              "Sexy": {
+                "n1": "PornSeductive"
+              },
+              "Hentai": {
+                "n1": "HentaiClips"
+              },
+              "Neutral": {
+                "n1": "SoftPorn"
+              }
+            },
+            "Hentai": {
+              "Porn": "Doujin18",
+              "Drawing": {
+                "n1": "R34"
+              }
+            }
+          }
+        }
+      },
+      "v3-hosts": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "properties": {
+              "allowedHost": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "blockedHost": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "allowedAll": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": {
+            "allowedHost": [
+              "cdn.discordapp.com",
+              "media.discordapp.net"
+            ],
+            "blockedHost": [
+              "localhost",
+              "127.0.0.1",
+              "::1"
+            ],
+            "allowedAll": true
+          }
+        }
+      },
+      "v3-host": {
+        "type": "object",
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": {
+            "host": "cdn.discordapp.com",
+            "allowed": true
+          }
+        },
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "properties": {
+              "host": {
+                "type": "string"
+              },
+              "allowed": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      },
+      "v3-hash-item": {
+        "type": "object",
+        "example": {
+          "url": "SIPI_Jelly_Beans_4.1.07.tiff.jpg",
+          "hash": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+          "hex": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+          "cache": {
+            "data": {
+              "Digital": 0.9983923089457676,
+              "Neutral": 0.9990656971931458,
+              "Drawing": 0.0006733882473781705,
+              "Porn": 0.0001992419856833294,
+              "Hentai": 0.00004998780423193239,
+              "Sexy": 0.00001167691243608715
+            },
+            "model": {
+              "url": "Default",
+              "size": "Default"
+            },
+            "timestamp": 1669705646169,
+            "average_time": 0,
+            "time": 2,
+            "hex": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+            "cache": "File"
+          }
+        },
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "hex": {
+            "type": "string"
+          },
+          "cache": {
+            "$ref": "#/components/schemas/v3-classification-item"
+          }
+        }
+      },
+      "v3-hash-response": {
+        "type": "object",
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": {
+            "url": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+            "hash": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+            "hex": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+            "cache": {
+              "data": {
+                "Digital": 0.9983923089457676,
+                "Neutral": 0.9990656971931458,
+                "Drawing": 0.0006733882473781705,
+                "Porn": 0.0001992419856833294,
+                "Hentai": 0.00004998780423193239,
+                "Sexy": 0.00001167691243608715
+              },
+              "model": {
+                "url": "Default",
+                "size": "Default"
+              },
+              "timestamp": 1669694275311,
+              "average_time": 0,
+              "time": 1,
+              "hex": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+              "cache": "In Memory"
+            }
+          }
+        },
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/v3-hash-item"
+          }
+        }
+      },
+      "v3-hash-responses": {
+        "type": "object",
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": [
+            {
+              "url": "SIPI_Jelly_Beans_4.1.07.tiff.jpg",
+              "hash": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+              "hex": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+              "cache": {
+                "data": {
+                  "Digital": 0.9983923089457676,
+                  "Neutral": 0.9990656971931458,
+                  "Drawing": 0.0006733882473781705,
+                  "Porn": 0.0001992419856833294,
+                  "Hentai": 0.00004998780423193239,
+                  "Sexy": 0.00001167691243608715
+                },
+                "model": {
+                  "url": "Default",
+                  "size": "Default"
+                },
+                "timestamp": 1669705646169,
+                "average_time": 0,
+                "time": 2,
+                "hex": "e18f8618f8663732ccf7deebac1200e52a16d77f9d618943030a260322427fb9",
+                "cache": "File"
+              }
+            },
+            {
+              "url": "Screenshot from 2022-11-29 13-39-52.png",
+              "hash": "bea9cd685a210f137776512117895c498ef031c7cb3ca508910853ed058569e7",
+              "hex": "bea9cd685a210f137776512117895c498ef031c7cb3ca508910853ed058569e7",
+              "cache": null
+            }
+          ]
+        },
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error_code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/v3-hash-item"
+            }
           }
         }
       }
     }
   }
 }
+
