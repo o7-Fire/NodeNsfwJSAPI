@@ -24,7 +24,7 @@ const fs = require('fs');
 
 const app = express();
 const cache = require('./config/cache');
-const nsfwModel = require("./models/NSFWModel");
+const nsfwModel = require("./models/v3_NSFWModel");
 
 nsfwModel.init().then(() => {
     console.log("Model loaded in", Date.now() - startTime, "ms");

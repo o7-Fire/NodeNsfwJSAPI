@@ -1,5 +1,5 @@
 const cache = require('../config/cache');
-const NSFWModel = require('../models/NSFWModel');
+const NSFWModel = require('../models/v3_NSFWModel');
 
 exports.health = async function (req, res) {
     try {
