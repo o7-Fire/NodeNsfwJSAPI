@@ -3,7 +3,7 @@
 const supertest = require("supertest");
 const {app} = require('../app.js');
 const request = supertest(app);
-
+const {testImageUrls} = require('./vars.js');
 const NSFWModel = require('../models/NSFWModel');
 const cache = require('../config/cache');
 const model = require('../models/NSFWModel');
@@ -40,10 +40,26 @@ describe("v3 Static API Test", () => {
             expect(res.body.data.allowed).toBe(true);
         });
     });
+});
 
-})
+describe("v3 Classification API Test", () => {
+    test("GET /api/v3/classification/:url", async () => {
+        return request.get("/api/v3/classification/" + NSFWModel.TEST_URL).expect(200);
+    });
+    test("POST /api/v3/classification", async () => {
+        return request.post("/api/v3/classification").attach("file", "test/assets/1.png").expect(200);
+    });
+
+    test("GET /api/v3/hash/:url", async () => {
+        return request.get("/api/v3/hash/" + NSFWModel.TEST_URL).expect(200);
+    });
+    test("POST /api/v3/hash", async () => {
+        return request.post("/api/v3/hash").attach("file", "test/assets/1.png").expect(200);
+    });
+});
 
 afterAll(async () => {
+    await cache.clear();
     await cache.close();
     await new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
 

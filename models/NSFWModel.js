@@ -196,6 +196,10 @@ function hashData(data) {
         //if binary return hash
         return crypto.createHash('sha256').update(data).digest('hex');
     }
+    //check if hex
+    if (data.length === 64 && data.match(/^[0-9a-fA-F]+$/)) {
+        return data;
+    }
     //return string, prevent path traversal
     data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
     //replace multiple dots with one
@@ -206,6 +210,24 @@ function hashData(data) {
     return crypto.createHash('sha256').update(data).digest('hex');
 }
 
+//test hashData
+function selfTestHashData() {
+    for (let i = 0; i < 100; i++) {
+        let data = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        let hash = hashData(data);
+        if (hash.length !== 64) {
+            throw new Error("Hash length is not 64");
+        }
+        if (hash !== hashData(data)) {
+            throw new Error("Hash is not deterministic: " + hash + " != " + hashData(data));
+        }
+    }
+    if (process.env.NODE_ENV === "test") {
+        console.log("Hash data self test passed");
+    }
+}
+
+selfTestHashData();
 const hashCache = require('../config/cache');
 let averageTimeToProcess = 0;
 module.exports = {

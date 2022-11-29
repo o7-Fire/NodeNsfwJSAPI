@@ -27,7 +27,6 @@ const cache = require('./config/cache');
 const nsfwModel = require("./models/NSFWModel");
 
 nsfwModel.init().then(() => {
-    cache.clear();
     console.log("Model loaded in", Date.now() - startTime, "ms");
 });
 

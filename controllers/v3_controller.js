@@ -135,15 +135,23 @@ exports.hashUrl = async function (req, res) {
             url: url,
             hash: hash,
             hex: hash,
-            data: await cache.get(hash),
+            cache: await cache.get(hash),
         }
-
-        res.status(200).json({
-            status: "SUCCESS",
-            error_code: "",
-            message: "OK",
-            data: data,
-        });
+        if (!data.cache) {
+            res.status(404).json({
+                status: "ERROR",
+                error_code: "ERR_HASH_URL",
+                message: "Not found",
+                data: data,
+            });
+        } else {
+            res.status(200).json({
+                status: "SUCCESS",
+                error_code: "",
+                message: "OK",
+                data: data,
+            });
+        }
     } catch (error) {
         res.status(error.status || 500).json({
             status: "ERROR",
@@ -157,6 +165,7 @@ exports.hashUpload = async function (req, res) {
     try {
         const files = req.files;
         const datas = [];
+        let atLeastOneCacheIsHit = false;
         for (let i = 0; i < files.length; i++) {
             const blob = files[i].buffer;
             const hash = NSFWModel.hashData(blob);
@@ -164,17 +173,28 @@ exports.hashUpload = async function (req, res) {
                 url: files[i].originalname,
                 hash: hash,
                 hex: hash,
-                data: await cache.get(hash),
+                cache: await cache.get(hash),
+            }
+            if (data.cache) {
+                atLeastOneCacheIsHit = true;
             }
             datas.push(data);
         }
-
-        res.status(200).json({
-            status: "SUCCESS",
-            error_code: "",
-            message: "OK",
-            data: datas,
-        });
+        if (atLeastOneCacheIsHit) {
+            res.status(200).json({
+                status: "SUCCESS",
+                error_code: "",
+                message: "OK",
+                data: datas,
+            });
+        } else {
+            res.status(404).json({
+                status: "ERROR",
+                error_code: "ERR_HASH_UPLOAD",
+                message: "Not found",
+                data: datas,
+            });
+        }
     } catch (error) {
         res.status(error.status || 500).json({
             status: "ERROR",

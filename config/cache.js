@@ -3,11 +3,33 @@ const fs = require('fs');
 const Redis = require("ioredis");
 
 /**
- * Every method is async, except for InMemory cache
+ * Every method is async, except for InMemory cache and name method
  *
  */
 
 const ENABLE_LOG = process.env.CACHE_LOG || false;
+
+function cleanKey(key) {
+    key = key.toString();
+    return key.replace(/[^a-zA-Z0-9]/g, "_");
+}
+
+function selfTestCleanKey() {
+    //hashing "hashed key" should yield the same result
+
+    for (let i = 0; i < 100; i++) {
+        const key = Math.random().toString(36).substring(7);
+        const key1 = cleanKey(key);
+        const key2 = cleanKey(key1);
+        if (key1 !== key2) {
+            console.error("Clean key error: " + key1 + " !== " + key2);
+            process.exit(1);
+        }
+    }
+    if (ENABLE_LOG) console.log("Cache key cleaner passed test");
+}
+
+selfTestCleanKey();
 
 function cleanData(data) {
     //make value immutable
@@ -26,6 +48,7 @@ function selfTestSync(cache) {
         console.error(cache.name + " Error: Expected {\"test\": \"test\"} but got " + value);
         process.exit(1);
     }
+    cache.clear();
 }
 
 function selfTestAsync(cache) {
@@ -45,6 +68,7 @@ const inMemoryCache = () => {
     hashCache.name = () => "In Memory";
     hashCache.get = function (key) {
         const startTime = Date.now();
+        key = cleanKey(key);
         const value = this[key];
         if (value) {
             lastAccessed[key] = Date.now();
@@ -56,6 +80,7 @@ const inMemoryCache = () => {
     }
     hashCache.set = function (key, value) {
         value = cleanData(value);
+        key = cleanKey(key);
         //check if size is too big
         const maxSize = process.env.MAX_CACHE_SIZE || 100;
         if (Math.random() < 0.1) {
@@ -64,15 +89,15 @@ const inMemoryCache = () => {
                 const dontDelete = ['get', 'set', 'clear', 'name'];
                 //don't delete the first 100 keys, sorted by how recently they were accessed
                 keys.sort((a, b) => lastAccessed[a] - lastAccessed[b]);
-                console.log("Clearing " + keys.length - maxSize + " local cache");
+                if (ENABLE_LOG) console.log("Clearing " + keys.length - maxSize + " local cache");
                 //format millis to date
                 const millis = lastAccessed[keys[keys.length - 1]];
-                console.log("Latest accessed key: " + new Date(millis));
+                if (ENABLE_LOG) console.log("Latest accessed key: " + new Date(millis));
                 for (let i = 0; i < keys.length - maxSize; i++) {
                     if (dontDelete.includes(keys[i])) continue;
                     delete this[keys[i]];
                 }
-                console.log("Local cache size: " + Object.keys(this).length);
+                if (ENABLE_LOG) console.log("Local cache size: " + Object.keys(this).length);
                 //clear lastAccessed
                 lastAccessed = {};
             }
@@ -123,6 +148,8 @@ const fileCache = () => {
     fileCache.name = () => "File";
     fileCache.get = async function (key) {
         const startTime = Date.now();
+        const ogKey = key.toString();
+        key = cleanKey(key);
         key = fileCachePath + key;
         if (!fs.existsSync(key)) return null;
         if (!fs.lstatSync(key).isFile()) return null;
@@ -130,14 +157,19 @@ const fileCache = () => {
         if (!rawValue) return null;
         const value = JSON.parse(rawValue);
         value.time = Date.now() - startTime;
-        value.hex = key;
+        value.hex = ogKey;
         if (process.env.TEST_MODE) value.cache = this.name();
         return value;
     }
     fileCache.set = async function (key, value) {
         value = cleanData(value);
+        key = cleanKey(key);
+        key = fileCachePath + key;
         //write file
-        fs.writeFileSync(fileCachePath + "/" + key, JSON.stringify(value));
+        fs.writeFileSync(key, JSON.stringify(value), {
+            encoding: 'utf8',
+            flag: 'w'
+        });
         return value;
     }
     fileCache.clear = async function () {
@@ -197,6 +229,7 @@ const redisClient = () => {
     redisCache.name = () => "Redis";
     redisCache.get = async function (key) {
         const startTime = Date.now();
+        key = cleanKey(key);
         const rawValue = await client.get(key);
         if (!rawValue) return null;
         const value = JSON.parse(rawValue);
@@ -207,6 +240,7 @@ const redisClient = () => {
     }
     redisCache.set = async function (key, value) {
         value = cleanData(value);
+        key = cleanKey(key);
         //set value
         await client.set(key, JSON.stringify(value));
         return value;
@@ -231,6 +265,7 @@ const memjsCache = () => {
     memCache.name = () => "Memcached";
     memCache.get = async function (key) {
         const startTime = Date.now();
+        key = cleanKey(key);
         const rawValue = await mc.get(key);
         if (!rawValue) return null;
         const value = JSON.parse(rawValue.toString());
@@ -241,6 +276,7 @@ const memjsCache = () => {
     }
     memCache.set = async function (key, value) {
         value = cleanData(value);
+        key = cleanKey(key);
         //set value
         await mc.set(key, JSON.stringify(value));
         return value;
@@ -322,15 +358,22 @@ function multilayer() {
                 console.error(currentCacheLayerName + " failed to get \"" + key + "\"", e);
             }
             if (!value) {
-                value = await oldGet(key);
                 if (ENABLE_LOG) {
                     console.log(currentCacheLayerName + ": failed to get \"" + key + "\" from cache, getting from next layer");
+                }
+                value = await oldGet(key);
+                if (value) {
+                    localCache.set(key, value);
+                    if (ENABLE_LOG) {
+                        console.log(currentCacheLayerName + ": set \"" + key + "\" in cache");
+                    }
                 }
             } else {
                 if (ENABLE_LOG) {
                     console.log(currentCacheLayerName + ": got \"" + key + "\" from cache (" + value.time + "ms)");
                 }
             }
+
             return value;
         }
         cache.set = async function (key, value) {
@@ -360,15 +403,22 @@ function multilayer() {
     //for naming
     cacheType.reverse();
     const oldGet = cache.get;
-    cache.name = "MultiLayer(" + cacheType.join(", ") + ")";
+    const oldSet = cache.set;
+    cache.name = () => "MultiLayer(" + cacheType.join(", ") + ")";
     cache.get = async function (key) {
         const startTime = Date.now();
+        key = cleanKey(key);
         const value = await oldGet(key);
         if (!value) return null;
         value.time = Date.now() - startTime;
         return value;
     }
-
+    cache.set = async function (key, value) {
+        value = cleanData(value);
+        key = cleanKey(key);
+        value = await oldSet(key, value);
+        return value;
+    };
     //self test
     selfTestAsync(cache);
     return cache;
@@ -379,4 +429,4 @@ exports.get = cache.get;
 exports.set = cache.set;
 exports.clear = cache.clear;
 exports.close = cache.close;
-exports.name = cache.name;
+exports.name = cache.name();
