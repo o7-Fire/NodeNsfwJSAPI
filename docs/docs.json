@@ -277,6 +277,25 @@
     "schemas": {
       "v3-classification-item": {
         "type": "object",
+        "example": {
+          "data": {
+            "Digital": 0.9983923089457676,
+            "Neutral": 0.9990656971931458,
+            "Drawing": 0.0006733882473781705,
+            "Porn": 0.0001992419856833294,
+            "Hentai": 0.00004998780423193239,
+            "Sexy": 0.00001167691243608715
+          },
+          "model": {
+            "url": "Default",
+            "size": "Default"
+          },
+          "timestamp": 1669705646169,
+          "average_time": 0,
+          "time": 4,
+          "hex": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+          "cache": "File"
+        },
         "required": [
           "data",
           "model",
@@ -320,6 +339,30 @@
       },
       "v3-classification": {
         "type": "object",
+        "example": {
+          "status": "SUCCESS",
+          "error_code": "",
+          "message": "OK",
+          "data": {
+            "data": {
+              "Digital": 0.9983923089457676,
+              "Neutral": 0.9990656971931458,
+              "Drawing": 0.0006733882473781705,
+              "Porn": 0.0001992419856833294,
+              "Hentai": 0.00004998780423193239,
+              "Sexy": 0.00001167691243608715
+            },
+            "model": {
+              "url": "Default",
+              "size": "Default"
+            },
+            "timestamp": 1669705646169,
+            "average_time": 0,
+            "time": 4,
+            "hex": "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1",
+            "cache": "File"
+          }
+        },
         "properties": {
           "status": {
             "type": "string"

@@ -12,6 +12,6 @@ module.exports = (app) => {
     app.get('/api/v3/meta/hosts/:host', v3Controller.checkHost);
     app.get('/api/v3/classification/:url', cacheMiddleware, v3Controller.classifyUrl);
     app.post('/api/v3/classification', uploadFile, v3Controller.classifyUpload);
-    app.get('/api/v3/hash/:url', v3Controller.hashUrl);
+    app.get('/api/v3/hash/:hex', v3Controller.hashUrl);
     app.post('/api/v3/hash', uploadFile, v3Controller.hashUpload);
 }

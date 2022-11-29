@@ -43,15 +43,18 @@ describe("v3 Static API Test", () => {
 });
 
 describe("v3 Classification API Test", () => {
-    test("GET /api/v3/classification/:url", async () => {
-        return request.get("/api/v3/classification/" + NSFWModel.TEST_URL).expect(200);
+    const testURLEncoded = encodeURIComponent(NSFWModel.TEST_URL);
+    test("GET /api/v3/classification/" + testURLEncoded, async () => {
+        return request.get("/api/v3/classification/" + testURLEncoded).expect(200);
     });
     test("POST /api/v3/classification", async () => {
         return request.post("/api/v3/classification").attach("file", "test/assets/1.png").expect(200);
     });
 
-    test("GET /api/v3/hash/:url", async () => {
-        return request.get("/api/v3/hash/" + NSFWModel.TEST_URL).expect(200);
+    test("GET /api/v3/hash/:hash", async () => {
+        //TODO get hash from request above
+        const hash = "8d311167da7ea1130a1e9983adbd034e9613f3e6e5f36fe87da811d9173374b1";
+        return request.get("/api/v3/hash/" + hash).expect(200);
     });
     test("POST /api/v3/hash", async () => {
         return request.post("/api/v3/hash").attach("file", "test/assets/1.png").expect(200);

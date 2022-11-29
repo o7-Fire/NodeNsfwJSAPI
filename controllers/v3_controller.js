@@ -129,7 +129,7 @@ exports.classifyUpload = async function (req, res) {
  */
 exports.hashUrl = async function (req, res) {
     try {
-        const url = req.params.url;
+        const url = req.params.hex;
         const hash = NSFWModel.hashData(url);
         const data = {
             url: url,
