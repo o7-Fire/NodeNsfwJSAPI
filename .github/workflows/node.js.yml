@@ -8,7 +8,7 @@ on:
   push:
    branches:
      - 'master'
-      - 'mvp'
+     - 'mvp'
   pull_request:
   workflow_dispatch:
 
