@@ -46,6 +46,11 @@ describe("v3 Static API Test", () => {
 describe("v3 Classification API Test", () => {
     const testURLEncoded = encodeURIComponent(NSFWModel.TEST_URL);
     test("GET /api/v3/classification/:url", async () => {
+        for (const url of testImageUrls) {
+            await request.get("/api/v3/classification/" + encodeURIComponent(url)).expect(200).expect((res) => {
+                expect(res.body.data).toBeDefined();
+            });
+        }
         return request.get("/api/v3/classification/" + testURLEncoded).expect(200);
     });
     test("POST /api/v3/classification", async () => {

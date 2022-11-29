@@ -1,18 +1,10 @@
 ## NSFW API Detection with NodeJS
 
-[![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
-
 
 ###  Quickstart
 
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
-### TODO
-- ~Process external gif~
-- Use preview gif for slow machine
-- imgur, giphy, etc
-- Proper API
-- Rewording
 
 ### Preview
 - Not 100% perfect
@@ -54,7 +46,7 @@ https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
 - response
 - ![](https://cdn.discordapp.com/attachments/840041811384860708/872872718897385582/unknown.png)
-- after processing and some cahce (pi 4 B)
+- after processing and some cache (pi 4 B)
 - ![](https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png)
 
 ## Tensorflow
@@ -104,7 +96,7 @@ or
 yarn add @tensorflow/tfjs-node-gpu
 ```
 
-### Misc
+### About
 
 Adopted from:
 
