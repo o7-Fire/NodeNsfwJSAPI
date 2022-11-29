@@ -14,6 +14,10 @@ on:
 
 jobs:
   build:
+    permissions:
+      checks: write
+      pull-requests: write
+      contents: write
     runs-on: ubuntu-latest
 
     strategy:
@@ -36,7 +40,7 @@ jobs:
       - uses: ArtiomTr/jest-coverage-report-action@v2
         id: coverage
         with:
-          output: report-markdown
+          output: comment, report-markdown
       - uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: "Test Coverage Report"
@@ -44,4 +48,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           recreate: true
           delete: true
+          number: ${{ github.event.pull_request.number }}
 
