@@ -1,8 +1,13 @@
-const redis = require('ioredis');
 const memjs = require('memjs');
 const fs = require('fs');
 const Redis = require("ioredis");
 
+/**
+ * Every method is async, except for InMemory cache
+ *
+ */
+
+const ENABLE_LOG = process.env.CACHE_LOG || false;
 
 function cleanData(data) {
     //make value immutable
@@ -84,6 +89,9 @@ const inMemoryCache = () => {
             delete this[key];
         }
     }
+    hashCache.close = async function () {
+        //do nothing
+    }
     //self test
     selfTestSync(hashCache);
     return hashCache;
@@ -91,7 +99,10 @@ const inMemoryCache = () => {
 
 const fileCache = () => {
     const fileCache = {};
-    const fileCachePath = process.env.FILE_CACHE_PATH || "./cache";
+    let fileCachePathH = (process.env.FILE_CACHE_PATH || "./cache");
+    if (!fileCachePathH.endsWith("/"))
+        fileCachePathH += "/";
+    const fileCachePath = fileCachePathH;
     if (!fs.existsSync(fileCachePath)) {
         fs.mkdirSync(fileCachePath, {recursive: true});
     }
@@ -108,25 +119,34 @@ const fileCache = () => {
         console.error(err);
         process.exit(1);
     }
+
     fileCache.name = () => "File";
     fileCache.get = async function (key) {
         const startTime = Date.now();
-        const value = JSON.parse(fs.readFileSync(fileCachePath + "/" + key, 'utf8'));
+        key = fileCachePath + key;
+        if (!fs.existsSync(key)) return null;
+        if (!fs.lstatSync(key).isFile()) return null;
+        const rawValue = fs.readFileSync(key, 'utf8');
+        if (!rawValue) return null;
+        const value = JSON.parse(rawValue);
         value.time = Date.now() - startTime;
         value.hex = key;
         if (process.env.TEST_MODE) value.cache = this.name();
         return value;
     }
-    fileCache.set = function (key, value) {
+    fileCache.set = async function (key, value) {
         value = cleanData(value);
         //write file
         fs.writeFileSync(fileCachePath + "/" + key, JSON.stringify(value));
         return value;
     }
-    fileCache.clear = function () {
+    fileCache.clear = async function () {
         //clear all files
-        fs.rmdirSync(fileCachePath, {});
+        fs.rmSync(fileCachePath, {recursive: true});
         fs.mkdirSync(fileCachePath, {recursive: true});
+    }
+    fileCache.close = async function () {
+
     }
     //self test
     selfTestAsync(fileCache);
@@ -156,7 +176,18 @@ const redisClient = () => {
             host: process.env.REDIS_HOST || "localhost",
             port: process.env.REDIS_PORT || 6379,
             password: process.env.REDIS_PASSWORD || null,
-            db: process.env.REDIS_DB || 0
+            db: process.env.REDIS_DB || 0,
+            lazyConnect: true,
+            retryStrategy: function (times) {
+
+                if (times % 4 === 0) {
+                    console.error("redisRetryError", 'Redis reconnect exhausted after 3 retries.');
+                    return null;
+                }
+
+                return 200;
+
+            }
         });
     }
     client.on('error', (err) => {
@@ -166,7 +197,9 @@ const redisClient = () => {
     redisCache.name = () => "Redis";
     redisCache.get = async function (key) {
         const startTime = Date.now();
-        const value = JSON.parse(await client.get(key));
+        const rawValue = await client.get(key);
+        if (!rawValue) return null;
+        const value = JSON.parse(rawValue);
         value.time = Date.now() - startTime;
         value.hex = key;
         if (process.env.TEST_MODE) value.cache = this.name();
@@ -180,6 +213,9 @@ const redisClient = () => {
     }
     redisCache.clear = async function () {
         await client.flushdb();
+    }
+    redisCache.close = async function () {
+        await client.quit();
     }
     //self test
     selfTestAsync(redisCache);
@@ -195,7 +231,9 @@ const memjsCache = () => {
     memCache.name = () => "Memcached";
     memCache.get = async function (key) {
         const startTime = Date.now();
-        const value = JSON.parse(await mc.get(key));
+        const rawValue = await mc.get(key);
+        if (!rawValue) return null;
+        const value = JSON.parse(rawValue.toString());
         value.time = Date.now() - startTime;
         value.hex = key;
         if (process.env.TEST_MODE) value.cache = this.name();
@@ -210,21 +248,40 @@ const memjsCache = () => {
     memCache.clear = async function () {
         await mc.flush();
     }
+    memCache.close = async function () {
+        await mc.quit();
+    }
     //self test
     selfTestAsync(memCache);
     return memCache;
 }
 
 function multilayer() {
-    let cache = {};
+    //stub
+    let cache = {
+        name: () => "Multilayer Stub",
+        set: async function (key, value) {
+
+        },
+        get: async function (key) {
+            return null;
+        },
+        clear: async function () {
+
+        },
+        close: async function () {
+
+        }
+    };
     //MULTILAYER CACHE LESSS GOOOOO
     const cacheType = (process.env.CACHE_TYPE ? process.env.CACHE_TYPE.split(",") : undefined) || ["InMemory"];
     if (cacheType.length < 1) {
         console.error("No CACHE_TYPE specified");
         process.exit(1);
     }
-
-    let layer = 0;
+    //reverse
+    cacheType.reverse();
+    let layerCount = cacheType.length - 1;
     for (const type of cacheType) {
         let localCache;
         switch (type) {
@@ -247,10 +304,12 @@ function multilayer() {
         //if one just return that one
         if (cacheType.length === 1) {
             console.log("Single layer cache: " + type);
+            localCache.name = localCache.name();
             return localCache;
         }
-        console.log("Cache Layer " + layer + " is " + localCache.name);
-        layer++;
+        const currentCacheLayerName = "Cache Layer " + layerCount + "/" + localCache.name();
+        console.log("Cache Layer " + layerCount + " is " + localCache.name());
+        layerCount--;
         const oldGet = cache.get;
         const oldSet = cache.set;
         const oldClear = cache.clear;
@@ -258,21 +317,30 @@ function multilayer() {
             let value;
             try {
                 value = await localCache.get(key);
+
             } catch (e) {
-                console.error("Cache Layer " + layer + "/" + cache.name + " failed to get " + key);
-                console.error(e);
+                console.error(currentCacheLayerName + " failed to get \"" + key + "\"", e);
             }
             if (!value) {
                 value = await oldGet(key);
+                if (ENABLE_LOG) {
+                    console.log(currentCacheLayerName + ": failed to get \"" + key + "\" from cache, getting from next layer");
+                }
+            } else {
+                if (ENABLE_LOG) {
+                    console.log(currentCacheLayerName + ": got \"" + key + "\" from cache (" + value.time + "ms)");
+                }
             }
             return value;
         }
         cache.set = async function (key, value) {
             try {
                 value = await localCache.set(key, value);
+                if (ENABLE_LOG) {
+                    console.log(currentCacheLayerName + ": set \"" + key + '"');
+                }
             } catch (e) {
-                console.error("Cache Layer " + layer + "/" + cache.name + " failed to set " + key);
-                console.error(e);
+                console.error("Cache Layer " + layerCount + "/" + cache.name() + " failed to set \"" + key + "\"", e);
             }
             value = await oldSet(key, value);
             return value;
@@ -280,18 +348,23 @@ function multilayer() {
         cache.clear = async function () {
             try {
                 await localCache.clear();
+                if (ENABLE_LOG) {
+                    console.log(currentCacheLayerName + ": cleared");
+                }
             } catch (e) {
-                console.error("Cache Layer " + layer + "/" + cache.name + " failed to clear");
-                console.error(e);
+                console.error("Cache Layer " + layerCount + "/" + cache.name() + " failed to clear", e);
             }
             await oldClear();
         }
     }
+    //for naming
+    cacheType.reverse();
     const oldGet = cache.get;
     cache.name = "MultiLayer(" + cacheType.join(", ") + ")";
     cache.get = async function (key) {
         const startTime = Date.now();
         const value = await oldGet(key);
+        if (!value) return null;
         value.time = Date.now() - startTime;
         return value;
     }
@@ -305,4 +378,5 @@ const cache = multilayer();
 exports.get = cache.get;
 exports.set = cache.set;
 exports.clear = cache.clear;
+exports.close = cache.close;
 exports.name = cache.name;

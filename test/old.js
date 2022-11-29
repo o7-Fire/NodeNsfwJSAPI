@@ -254,7 +254,7 @@ async function prep() {
     console.log("Ready");
     process.env.TEST_MODE = true;
     process.env.ALLOW_ALL_HOST = true;
-    const assad = require("./app.js");
+    const assad = require("../app.js");
     test1();
 }
 

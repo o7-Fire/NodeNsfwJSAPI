@@ -324,7 +324,7 @@ module.exports = {
         }
         //set cache
         if (hashCache) {
-            hashCache.set(hex, reportPrediction);
+            await hashCache.set(hex, reportPrediction);
         }
         averageTimeToProcess = (averageTimeToProcess + reportPrediction.time) / 2;
         return reportPrediction;
@@ -369,7 +369,7 @@ module.exports = {
                             url = new URL(url).origin + pic.headers.location;
                         }
                         redirectCounter++;
-                        continue;
+
                     } else {
                         break;
                     }
@@ -380,7 +380,7 @@ module.exports = {
                     };
                 }
             } catch (err) {
-                result.message = "Download Image Error for \"" + url + "\": " + err.toString();
+                result.message = "Download Image Error for \"" + url + "\": " + err ? (err.message ? err.message + " " + err.status : err) : "Unknown Error";//most readable code in here
                 console.error(result.message);
                 result.status = err.response ? err.response.status : (err.status || 500);
                 throw result;

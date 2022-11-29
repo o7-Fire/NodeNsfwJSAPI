@@ -5,7 +5,12 @@
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 
 const startTime = Date.now();
-require("dotenv").config();
+
+require("dotenv").config({
+    path: __dirname + "/.env" + (process.env.NODE_ENV ? "." + process.env.NODE_ENV : "")
+});
+process.env.TEST_MODE = (process.env.NODE_ENV === "test") + "";
+console.info("Starting server in " + process.env.NODE_ENV + " mode");
 
 const express = require("express");
 const swaggerUi = require('swagger-ui-express');
@@ -110,9 +115,9 @@ v3_router(app);
 /* End of Routing Modules */
 
 
-const apiVersion = "v3";
+const apiVersion = process.env.API_VERSION || "v3";
 const testURL = "/api/" + apiVersion + "/health";
-const indexHtml = fs.readFileSync(process.cwd() + "/views/index.html").toString().replaceAll("API_VERSIONING", apiVersion).replaceAll("TEST_URL", testURL);
+const indexHtml = fs.readFileSync(process.cwd() + "/views/index.html").toString().replace("API_VERSIONING", apiVersion).replace("TEST_URL", testURL);
 app.get("/", (request, response) => {
     response.send(indexHtml);
 });

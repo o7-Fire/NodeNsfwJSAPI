@@ -11,6 +11,7 @@ exports.health = async function (req, res) {
             data: data,
         });
     } catch (error) {
+        console.error(error);
         res.status(error.status || 500).json({
             status: "ERROR",
             error_code: "ERR_HEALTH",

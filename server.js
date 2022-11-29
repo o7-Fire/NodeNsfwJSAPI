@@ -1,4 +1,4 @@
-const app = require("./app.js");
+const {app} = require("./app.js");
 const http = require("http");
 const os = require("os");
 const fs = require("fs");
