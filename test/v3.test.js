@@ -18,6 +18,7 @@ const model = require('../models/NSFWModel');
  *     app.post('/api/v3/hash', uploadFile, v3Controller.hashUpload);
  */
 
+jest.setTimeout(30000);
 beforeAll(async () => {
     //await cache.connect();
     await model.init();
@@ -44,7 +45,7 @@ describe("v3 Static API Test", () => {
 
 describe("v3 Classification API Test", () => {
     const testURLEncoded = encodeURIComponent(NSFWModel.TEST_URL);
-    test("GET /api/v3/classification/" + testURLEncoded, async () => {
+    test("GET /api/v3/classification/:url", async () => {
         return request.get("/api/v3/classification/" + testURLEncoded).expect(200);
     });
     test("POST /api/v3/classification", async () => {

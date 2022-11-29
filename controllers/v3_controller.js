@@ -89,6 +89,7 @@ exports.classifyUrl = async function (req, res) {
             data: data,
         });
     } catch (error) {
+        console.error(error);
         res.status(error.status || 500).json({
             status: "ERROR",
             error_code: "ERR_CLASSIFY_URL",
@@ -114,6 +115,7 @@ exports.classifyUpload = async function (req, res) {
             data: datas,
         });
     } catch (error) {
+        console.error(error);
         res.status(error.status || 500).json({
             status: "ERROR",
             error_code: "ERR_CLASSIFY_UPLOAD",
@@ -153,6 +155,7 @@ exports.hashUrl = async function (req, res) {
             });
         }
     } catch (error) {
+        console.error(error);
         res.status(error.status || 500).json({
             status: "ERROR",
             error_code: "ERR_HASH_URL",
@@ -196,6 +199,7 @@ exports.hashUpload = async function (req, res) {
             });
         }
     } catch (error) {
+        console.error(error);
         res.status(error.status || 500).json({
             status: "ERROR",
             error_code: "ERR_HASH_UPLOAD",

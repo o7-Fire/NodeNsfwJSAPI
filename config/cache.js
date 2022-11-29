@@ -340,7 +340,6 @@ function multilayer() {
         //if one just return that one
         if (cacheType.length === 1) {
             console.log("Single layer cache: " + type);
-            localCache.name = localCache.name();
             return localCache;
         }
         const currentCacheLayerName = "Cache Layer " + layerCount + "/" + localCache.name();
@@ -419,6 +418,7 @@ function multilayer() {
         value = await oldSet(key, value);
         return value;
     };
+    cache.isMultilayer = true;
     //self test
     selfTestAsync(cache);
     return cache;
@@ -429,4 +429,4 @@ exports.get = cache.get;
 exports.set = cache.set;
 exports.clear = cache.clear;
 exports.close = cache.close;
-exports.name = cache.name();
+exports.name = cache.isMultilayer ? cache.name() : cache.name;

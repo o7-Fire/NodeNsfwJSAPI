@@ -116,7 +116,7 @@ function assignReport(t1, t2, reportPrediction) {
 
 async function classify(image) {
     if (!nsfwModel) {
-        throw new Error("Model not loaded");
+        await module.exports.init();
     }
     const prediction = await nsfwModel.classify(image);
     let reportPrediction = {};
@@ -231,6 +231,8 @@ function selfTestHashData() {
 selfTestHashData();
 const hashCache = require('../config/cache');
 let averageTimeToProcess = 0;
+let ivebeenhere = false;
+let initResolve = [];
 module.exports = {
     categories: categories,
     hostsFilter,
@@ -238,28 +240,34 @@ module.exports = {
     hashData,
     TEST_URL: process.env.TEST_URL || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/SIPI_Jelly_Beans_4.1.07.tiff/lossy-page1-256px-SIPI_Jelly_Beans_4.1.07.tiff.jpg",
     init: async function () {
-
+        if (nsfwModel) return;  // Load the model in the memory only once!
+        if (ivebeenhere) {
+            const waitIPromise = new Promise((resolve, reject) => {
+                initResolve.push(resolve);
+            });
+            await waitIPromise;
+            return;
+        } else {
+            ivebeenhere = true;
+        }
         const model_url = process.env.NSFW_MODEL_URL;
         const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
-        // Load the model in the memory only once!
-        if (!nsfwModel) {
-            try {
-                //model_url, { size: parseInt(shape_size) }
-
-                if (!model_url || !shape_size) nsfwModel = await nsfw.load();
-                else {
-                    nsfwModel = {};
-                    nsfwModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
-                    currentModel.size = shape_size;
-                    currentModel.url = model_url;
-                    console.info("Loaded: " + model_url + ":" + shape_size);
-                }
-                console.info("The NSFW Model was loaded successfully!");
-            } catch (err) {
-                console.error(err);
+        try {
+            //model_url, { size: parseInt(shape_size) }
+            if (!model_url || !shape_size) nsfwModel = await nsfw.load();
+            else {
+                nsfwModel = {};
+                nsfwModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
+                currentModel.size = shape_size;
+                currentModel.url = model_url;
+                console.info("Loaded: " + model_url + ":" + shape_size);
             }
+            console.info("The NSFW Model was loaded successfully!");
+        } catch (err) {
+            console.error(err);
         }
+        initResolve.forEach(resolve => resolve());
     },
 
     saveImage: async function (data, hash) {//return hash
