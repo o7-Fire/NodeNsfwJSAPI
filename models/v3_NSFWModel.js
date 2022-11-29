@@ -52,7 +52,7 @@ nsfw = require("nsfwjs");
 tf.enableProdMode(); // enable on production
 
 
-let nsfwModel;
+let v3_NSFWModel;
 
 let currentModel = {
     url: "Default",
@@ -115,10 +115,10 @@ function assignReport(t1, t2, reportPrediction) {
 }
 
 async function classify(image) {
-    if (!nsfwModel) {
+    if (!v3_NSFWModel) {
         await module.exports.init();
     }
-    const prediction = await nsfwModel.classify(image);
+    const prediction = await v3_NSFWModel.classify(image);
     let reportPrediction = {};
     let t1 = prediction[0];
     let t2 = prediction[1];
@@ -240,7 +240,7 @@ module.exports = {
     hashData,
     TEST_URL: process.env.TEST_URL || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/SIPI_Jelly_Beans_4.1.07.tiff/lossy-page1-256px-SIPI_Jelly_Beans_4.1.07.tiff.jpg",
     init: async function () {
-        if (nsfwModel) return;  // Load the model in the memory only once!
+        if (v3_NSFWModel) return;  // Load the model in the memory only once!
         if (ivebeenhere) {
             const waitIPromise = new Promise((resolve, reject) => {
                 initResolve.push(resolve);
@@ -255,10 +255,10 @@ module.exports = {
 
         try {
             //model_url, { size: parseInt(shape_size) }
-            if (!model_url || !shape_size) nsfwModel = await nsfw.load();
+            if (!model_url || !shape_size) v3_NSFWModel = await nsfw.load();
             else {
-                nsfwModel = {};
-                nsfwModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
+                v3_NSFWModel = {};
+                v3_NSFWModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
                 currentModel.size = shape_size;
                 currentModel.url = model_url;
                 console.info("Loaded: " + model_url + ":" + shape_size);
@@ -346,7 +346,7 @@ module.exports = {
 
         if (gif) {
             if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
-            reportPrediction.data = await nsfwModel.classifyGif(data);
+            reportPrediction.data = await v3_NSFWModel.classifyGif(data);
         } else {
             image = await tf.node.decodeImage(data, 3);
             reportPrediction.data = await classify(image);
@@ -423,7 +423,7 @@ module.exports = {
                     };
                 }
             } catch (err) {
-                result.message = "Download Image Error for \"" + url + "\": " + err ? (err.message ? err.message + " " + err.status : err) : "Unknown Error";//most readable code in here
+                result.message = "Download Image Error for \"" + url + "\": " + (err ? (err.message ? err.message + " " + err.status : err) : "Unknown Error");//most readable code in here
                 console.error(result.message);
                 result.status = err.response ? err.response.status : (err.status || 500);
                 throw result;
@@ -442,6 +442,6 @@ module.exports = {
         return result;
     },
     available: function () {
-        return nsfwModel !== undefined;
+        return v3_NSFWModel !== undefined;
     }
 };

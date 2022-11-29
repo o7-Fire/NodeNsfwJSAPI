@@ -4,9 +4,9 @@ const supertest = require("supertest");
 const {app} = require('../app.js');
 const request = supertest(app);
 const {testImageUrls} = require('./vars.js');
-const NSFWModel = require('../models/NSFWModel');
+const NSFWModel = require('../models/v3_NSFWModel');
 const cache = require('../config/cache');
-const model = require('../models/NSFWModel');
+const model = require('../models/v3_NSFWModel');
 /**
  *     app.get('/api/v3/health', healthAuth, v3Controller.health);
  *     app.get('/api/v3/meta/categories', v3Controller.getCategories);
@@ -44,15 +44,13 @@ describe("v3 Static API Test", () => {
 });
 
 describe("v3 Classification API Test", () => {
-    const testURLEncoded = encodeURIComponent(NSFWModel.TEST_URL);
-    test("GET /api/v3/classification/:url", async () => {
-        for (const url of testImageUrls) {
-            await request.get("/api/v3/classification/" + encodeURIComponent(url)).expect(200).expect((res) => {
+    for (const url of testImageUrls) {
+        test("GET /api/v3/classification/" + url, async () => {
+            return await request.get("/api/v3/classification/" + encodeURIComponent(url)).expect(200).expect((res) => {
                 expect(res.body.data).toBeDefined();
             });
-        }
-        return request.get("/api/v3/classification/" + testURLEncoded).expect(200);
-    });
+        });
+    }
     test("POST /api/v3/classification", async () => {
         return request.post("/api/v3/classification").attach("file", "test/assets/1.png").expect(200);
     });
