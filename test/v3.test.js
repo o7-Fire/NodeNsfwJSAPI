@@ -46,9 +46,12 @@ describe("v3 Static API Test", () => {
 describe("v3 Classification API Test", () => {
     for (const url of testImageUrls) {
         test("GET /api/v3/classification/" + url, async () => {
-            return await request.get("/api/v3/classification/" + encodeURIComponent(url)).expect(200).expect((res) => {
-                expect(res.body.data).toBeDefined();
-            });
+            return await request.get("/api/v3/classification/" + encodeURIComponent(url))
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .expect((res) => {
+                    expect(res.body.data.data).toBeDefined();
+                });
         });
     }
     test("POST /api/v3/classification", async () => {
