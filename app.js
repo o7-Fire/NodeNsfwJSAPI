@@ -40,13 +40,13 @@ app.use(function (req, res, next) {
     if (!process.env.NODE_NSFW_KEY) {
         next();
     } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
-        console.log("No auth");
-        return res.status(403).json({
+        //console.log("No auth");
+        return res.status(401).json({
             error: "No Authorization Provided"
         });
     } else if (req.headers.authorization !== process.env.NODE_NSFW_KEY) {
-        console.log("invalid auth");
-        return res.status(451).json({
+        //console.log("invalid auth");
+        return res.status(401).json({
             error: "Invalid Authorization"
         });
     } else {
