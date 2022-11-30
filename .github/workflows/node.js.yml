@@ -13,7 +13,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  coverage:
+  Coverage:
     permissions:
       checks: write
       pull-requests: write
@@ -21,10 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Use Node.js 16.x
+      - name: Use Node.js 14.x
         uses: actions/setup-node@v3
         with:
-          node-version: 16.x
+          node-version: 14.x
           cache: 'npm'
           cache-dependency-path: 'package-lock.json'
       - run: npm ci
@@ -41,7 +41,7 @@ jobs:
           recreate: true
           delete: true
           number: ${{ github.event.pull_request.number }}
-  test:
+  Test:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
         # < 12.0.0 is not supported because jest and syntax
         # > 16.0.0 is not supported because of tfjs obscure error
         #send help
-        node-version: [ 14.x ]
+        node-version: [ 16.x ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:

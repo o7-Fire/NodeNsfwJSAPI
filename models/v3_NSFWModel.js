@@ -250,6 +250,7 @@ module.exports = {
         } else {
             ivebeenhere = true;
         }
+        if (v3_NSFWModel) return;  // Load the model in the memory only once!
         const model_url = process.env.NSFW_MODEL_URL;
         const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
