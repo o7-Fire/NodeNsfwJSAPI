@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "start-production": "NODE_ENV=production pm2 start server.js --name nsfw-detector-api",
-    "test": "NODE_ENV=test jest --ci --json --coverage --testLocationInResults --outputFile=report.json",
+    "test": "NODE_ENV=test jest --coverage",
     "testDev": "NODE_ENV=test jest --watch"
   },
   "dependencies": {
