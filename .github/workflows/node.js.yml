@@ -39,7 +39,6 @@ jobs:
           message: ${{ steps.coverage.outputs.report }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           recreate: true
-          delete: true
           number: ${{ github.event.pull_request.number }}
   test:
     runs-on: ubuntu-latest
