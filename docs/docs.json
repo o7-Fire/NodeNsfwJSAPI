@@ -41,7 +41,7 @@
     "/api/v3/meta/categories": {
       "get": {
         "summary": "Get Categories",
-        "description": "Get all categories",
+        "description": "Get all categories, n1 is negative 1",
         "responses": {
           "200": {
             "description": "OK",
@@ -61,8 +61,8 @@
     },
     "/api/v3/meta/hosts": {
       "get": {
-        "summary": "Get Hosts",
-        "description": "Get all hosts",
+        "summary": "Get Hosts List",
+        "description": "Get all blocked and allowed hosts",
         "responses": {
           "200": {
             "description": "OK",
@@ -82,8 +82,8 @@
     },
     "/api/v3/meta/hosts/{host}": {
       "get": {
-        "summary": "Get Host",
-        "description": "Get a host",
+        "summary": "Check Host",
+        "description": "Check if a host is blocked or allowed",
         "parameters": [
           {
             "name": "host",
@@ -152,8 +152,8 @@
     },
     "/api/v3/classification": {
       "post": {
-        "summary": "Classify Image",
-        "description": "Classify an image",
+        "summary": "Classify Images",
+        "description": "Classify images with uploaded files",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -194,13 +194,13 @@
     },
     "/api/v3/hash/{hash}": {
       "get": {
-        "summary": "Get Hash",
-        "description": "Get a hash",
+        "summary": "Get Hash Data",
+        "description": "Check if a hash is in the database",
         "parameters": [
           {
             "name": "hash",
             "in": "path",
-            "description": "Hash",
+            "description": "Hash encoded in Hex",
             "required": true,
             "schema": {
               "type": "string"
@@ -232,8 +232,8 @@
     },
     "/api/v3/hash": {
       "post": {
-        "summary": "Get Hashes",
-        "description": "Get hashes",
+        "summary": "Get Hash Data",
+        "description": "Get hashes from uploaded files, won't classify images",
         "requestBody": {
           "content": {
             "multipart/form-data": {

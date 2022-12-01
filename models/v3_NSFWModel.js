@@ -64,6 +64,8 @@ if (supportGIF)
     console.log("SUPPORT_GIF_CLASSIFICATION")
 //Using n1 do 1 - (n1 - n2)
 //basically a matrix
+//yo wtf is n1
+//oh it's negative 1
 const categories = {
     Drawing: {
         Hentai: "Anime",
