@@ -27,7 +27,8 @@ const cache = require('./config/cache');
 const nsfwModel = require("./models/v3_NSFWModel");
 
 nsfwModel.init().then(() => {
-   console.log("Model loaded in", Date.now() - startTime, "ms");
+    //Cannot log after tests are done
+    if (process.env.NODE_ENV !== "test") console.log("Model loaded in", Date.now() - startTime, "ms");
 });
 
 

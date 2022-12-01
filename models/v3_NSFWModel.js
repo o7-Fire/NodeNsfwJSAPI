@@ -262,9 +262,11 @@ module.exports = {
                 v3_NSFWModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
                 currentModel.size = shape_size;
                 currentModel.url = model_url;
-                console.info("Loaded: " + model_url + ":" + shape_size);
+                //Cannot log after tests are done
+                if (process.env.NODE_ENV !== "test") console.info("Loaded: " + model_url + ":" + shape_size);
             }
-            console.info("The NSFW Model was loaded successfully!");
+            //Cannot log after tests are done
+            if (process.env.NODE_ENV !== "test") console.info("The NSFW Model was loaded successfully!");
         } catch (err) {
             console.error(err);
         }
