@@ -352,12 +352,20 @@ module.exports = {
         if (gif) {
             if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
             reportPrediction.data = await v3_NSFWModel.classifyGif(data);
+            //map to old format
+            //from: [{className: string, probability: number}, {}, {}]
+            //to: [{className1: number, className2: number, className3: number}, {}, {}]
+            reportPrediction.data = reportPrediction.data.map((item) => {
+                let newItem = {};
+                item.forEach((item2) => {
+                    newItem[item2.className] = item2.probability;
+                });
+                return newItem;
+            });
         } else {
             image = await tf.node.decodeImage(data, 3);
-            reportPrediction.data = await classify(image);
+            reportPrediction.data = [await classify(image)];
         }
-
-
         image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
         reportPrediction.model = currentModel;
         reportPrediction.timestamp = new Date().getTime();

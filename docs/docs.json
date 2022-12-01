@@ -278,14 +278,16 @@
       "v3-classification-item": {
         "type": "object",
         "example": {
-          "data": {
-            "Digital": 0.9983923089457676,
-            "Neutral": 0.9990656971931458,
-            "Drawing": 0.0006733882473781705,
-            "Porn": 0.0001992419856833294,
-            "Hentai": 0.00004998780423193239,
-            "Sexy": 0.00001167691243608715
-          },
+          "data": [
+            {
+              "Digital": 0.9983923089457676,
+              "Neutral": 0.9990656971931458,
+              "Drawing": 0.0006733882473781705,
+              "Porn": 0.0001992419856833294,
+              "Hentai": 0.00004998780423193239,
+              "Sexy": 0.00001167691243608715
+            }
+          ],
           "model": {
             "url": "Default",
             "size": "Default"
@@ -304,9 +306,12 @@
         ],
         "properties": {
           "data": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "number"
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "number"
+              }
             }
           },
           "model": {
