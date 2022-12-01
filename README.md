@@ -1,13 +1,25 @@
-## NSFW API Detection with NodeJS
+# NSFW API Detection with NodeJS
 
+![](https://img.shields.io/librariesio/github/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/workflow/status/o7-Fire/NodeNsfwJSAPI/Node.js%20CI?event=push&style=flat-square)
+![](https://img.shields.io/github/v/release/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 
-###  Quickstart
+![](https://img.shields.io/github/license/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/stars/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/forks/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/contributors/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/repo-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/languages/code-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/languages/top/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+
+## Quickstart
 
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
+## Preview
 
-### Preview
 - Not 100% perfect
+
 <table align="center">
   <tbody>
     <tr>
@@ -48,6 +60,8 @@ https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 - ![](https://cdn.discordapp.com/attachments/840041811384860708/872872718897385582/unknown.png)
 - after processing and some cache (pi 4 B)
 - ![](https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png)
+
+# Stuff
 
 ## Tensorflow
 

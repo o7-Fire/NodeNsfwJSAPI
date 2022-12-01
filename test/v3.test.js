@@ -46,7 +46,6 @@ describe("v3 Static API Test", () => {
 describe("v3 Classification API Test", () => {
     for (const url of testImageUrls) {
         test("GET /api/v3/classification/" + url, async () => {
-
             return await request.get("/api/v3/classification/" + encodeURIComponent(url))
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -55,8 +54,23 @@ describe("v3 Classification API Test", () => {
                 });
         });
     }
+    test("GET /api/v3/classification Cache Test", async () => {
+        for (let i = 0; i < 10; i++) {
+            await request.get("/api/v3/classification/" + encodeURIComponent(NSFWModel.TEST_URL))
+                .expect(200)
+                .expect('Content-Type', /json/)
+                .expect((res) => {
+                    expect(res.body.data.data).toBeDefined();
+                });
+        }
+    });
     test("POST /api/v3/classification", async () => {
         return request.post("/api/v3/classification").attach("file", "test/assets/1.png").expect(200);
+    });
+    test("POST /api/v3/classification Cache Test", async () => {
+        for (let i = 0; i < 10; i++) {
+            await request.post("/api/v3/classification").attach("file", "test/assets/1.png").expect(200);
+        }
     });
 
     test("GET /api/v3/hash/:hash", async () => {

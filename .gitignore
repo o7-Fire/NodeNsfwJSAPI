@@ -129,7 +129,6 @@ web_modules/
 # TypeScript cache
 *.tsbuildinfo
 .env.example
-test/old.js
 # Optional npm cache directory
 .npm
 

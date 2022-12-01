@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Node NSFW JS API",
-    "description": "NSFW Classification API for images with Node.js",
+    "description": "Highly Scalable Industry Standard NSFW Classification API for images with Node.js",
     "version": "1.0.1"
   },
   "servers": [
