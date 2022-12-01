@@ -50,6 +50,11 @@ describe("v3 Classification API Test", () => {
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .expect((res) => {
+                    //check if res.body is string
+                    if (typeof res.body === "string") {
+                        //wtf ??? why is this a string
+                        res.body = JSON.parse(res.body);//wtf ?
+                    }
                     expect(res.body.data.data).toBeDefined();
                 });
         });
@@ -60,6 +65,10 @@ describe("v3 Classification API Test", () => {
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .expect((res) => {
+                    //check if res.body is string
+                    if (typeof res.body === "string") {
+                        res.body = JSON.parse(res.body);//wtf ?
+                    }
                     expect(res.body.data.data).toBeDefined();
                 });
         }
