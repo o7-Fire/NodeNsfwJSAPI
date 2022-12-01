@@ -1,62 +1,31 @@
-## NSFW API Detection with NodeJS
+# NSFW API Detection with NodeJS
+![](https://img.shields.io/librariesio/github/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/workflow/status/o7-Fire/NodeNsfwJSAPI/Node.js%20CI?event=push&style=flat-square)
+![](https://img.shields.io/github/v/release/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 
-[![Run on Repl.it](https://repl.it/badge/github/o7-Fire/NodeNsfwJSAPI)](https://repl.it/github/o7-Fire/NodeNsfwJSAPI)
+![](https://img.shields.io/github/license/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/stars/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/forks/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/contributors/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/repo-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/languages/code-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
+![](https://img.shields.io/github/languages/top/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 
-
-###  Quickstart
+## Quickstart
 
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
-### TODO
-- ~Process external gif~
-- Use preview gif for slow machine
-- imgur, giphy, etc
-- Proper API
-- Rewording
+## Preview
 
-### Preview
 - Not 100% perfect
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center">
-        <a
-          href="https://cdn.discordapp.com/attachments/840041811384860709/872868193511825428/unknown.png">
-          <image
-            src="https://cdn.discordapp.com/attachments/840041811384860709/872868193511825428/unknown.png" />
-        </a>
-      </td>
-      <td align="center">
-        <a
-          href="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png">
-          <image
-            src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" />
-        </a>
-      </td>
-      <td align="center">
-        <a
-          href="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png">
-          <image
-            src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png"/>
-        </a>
-      </td>
-            <td align="center">
-        <a
-          href="https://cdn.discordapp.com/attachments/840041811384860709/872868265372831785/unknown.png">
-          <image
-            src="https://cdn.discordapp.com/attachments/840041811384860709/872868265372831785/unknown.png"/>
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
-
-- response
-- ![](https://cdn.discordapp.com/attachments/840041811384860708/872872718897385582/unknown.png)
-- after processing and some cahce (pi 4 B)
+- ![Discord Bot](https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png)
+- ![Yes](https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png)
+- ![Swagger Documentation](https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png)
+- ![Response and Request](https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png)
+- after processing and some cache (pi 4 B)
 - ![](https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png)
 
+# Stuff
 ## Tensorflow
 
 TensorFlow.js for Node currently supports the following platforms:
@@ -104,7 +73,7 @@ or
 yarn add @tensorflow/tfjs-node-gpu
 ```
 
-### Misc
+### About
 
 Adopted from:
 

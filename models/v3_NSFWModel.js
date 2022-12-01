@@ -18,8 +18,7 @@ if (!haveAVX) {
 const axios = require("axios")
 const Path = require("path");
 const crypto = require('crypto');
-const AsyncLock = require('async-lock');
-const tfLock = new AsyncLock();
+
 if (!!process.env.CACHE_IMAGE_HASH_FILE) {
     //check if end with /
     if (!process.env.CACHE_IMAGE_HASH_FILE.endsWith("/")) {
@@ -53,7 +52,7 @@ nsfw = require("nsfwjs");
 tf.enableProdMode(); // enable on production
 
 
-let nsfwModel;
+let v3_NSFWModel;
 
 let currentModel = {
     url: "Default",
@@ -65,7 +64,9 @@ if (supportGIF)
     console.log("SUPPORT_GIF_CLASSIFICATION")
 //Using n1 do 1 - (n1 - n2)
 //basically a matrix
-const report = {
+//yo wtf is n1
+//oh it's negative 1
+const categories = {
     Drawing: {
         Hentai: "Anime",
         Sexy: "ArtificialProvocative",
@@ -101,8 +102,8 @@ function assignReport(t1, t2, reportPrediction) {
     v1 = t1.probability;
     c2 = t2.className;
     v2 = t2.probability;
-    if (report[c1][c2]) {
-        let c3 = report[c1][c2];
+    if (categories[c1][c2]) {
+        let c3 = categories[c1][c2];
         if (c3.n1) {
             reportPrediction[c3.n1] = v1 - v2;
             reportPrediction[c3.n1] = 1 - reportPrediction[c3.n1];
@@ -116,10 +117,10 @@ function assignReport(t1, t2, reportPrediction) {
 }
 
 async function classify(image) {
-    if (!nsfwModel) {
-        throw new Error("Model not loaded");
+    if (!v3_NSFWModel) {
+        await module.exports.init();
     }
-    const prediction = await nsfwModel.classify(image);
+    const prediction = await v3_NSFWModel.classify(image);
     let reportPrediction = {};
     let t1 = prediction[0];
     let t2 = prediction[1];
@@ -180,11 +181,27 @@ function hostsFilter() {
     }
 }
 
+function hostAllowed(host) {
+    const filter = hostsFilter();
+    if (filter.blockedHost.includes(host)) {
+        return false;
+    }
+    if (filter.allowedAll) {
+        return true;
+    }
+    return filter.allowedHost.includes(host);
+}
+
 function hashData(data) {
+    if (!data) return data;
     //if binary or buffer return hash
     if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
         //if binary return hash
         return crypto.createHash('sha256').update(data).digest('hex');
+    }
+    //check if hex
+    if (data.length === 64 && data.match(/^[0-9a-fA-F]+$/)) {
+        return data;
     }
     //return string, prevent path traversal
     data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
@@ -192,45 +209,72 @@ function hashData(data) {
     data = data.replace(/\.+/g, '.');
     //remove leading and trailing dots
     data = data.replace(/^\.+|\.+$/g, '');
-    return data;
+    //digest to hex
+    return crypto.createHash('sha256').update(data).digest('hex');
 }
 
-let hashCache = undefined;
-let averageTimeToProcess = 0;
-module.exports = {
-    report: report,
-    hostsFilter: hostsFilter,
-    init: async function () {
+//test hashData
+function selfTestHashData() {
+    for (let i = 0; i < 100; i++) {
+        let data = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        let hash = hashData(data);
+        if (hash.length !== 64) {
+            throw new Error("Hash length is not 64");
+        }
+        if (hash !== hashData(data)) {
+            throw new Error("Hash is not deterministic: " + hash + " != " + hashData(data));
+        }
+    }
+    if (process.env.NODE_ENV === "test") {
+        console.log("Hash data self test passed");
+    }
+}
 
+selfTestHashData();
+const hashCache = require('../config/cache');
+let averageTimeToProcess = 0;
+let ivebeenhere = false;
+let initResolve = [];
+module.exports = {
+    categories: categories,
+    hostsFilter,
+    hostAllowed,
+    hashData,
+    TEST_URL: process.env.TEST_URL || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/SIPI_Jelly_Beans_4.1.07.tiff/lossy-page1-256px-SIPI_Jelly_Beans_4.1.07.tiff.jpg",
+    init: async function () {
+        if (v3_NSFWModel) return;  // Load the model in the memory only once!
+        if (ivebeenhere) {
+            const waitIPromise = new Promise((resolve) => {
+                initResolve.push(resolve);
+            });
+            await waitIPromise;
+            return;
+        } else {
+            ivebeenhere = true;
+        }
+        if (v3_NSFWModel) return;  // Load the model in the memory only once!
         const model_url = process.env.NSFW_MODEL_URL;
         const shape_size = process.env.NSFW_MODEL_SHAPE_SIZE;
 
-        // Load the model in the memory only once!
-        if (!nsfwModel) {
-            try {
-                //model_url, { size: parseInt(shape_size) }
-
-                if (!model_url || !shape_size) nsfwModel = await nsfw.load();
-                else {
-                    nsfwModel = {};
-                    nsfwModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
-                    currentModel.size = shape_size;
-                    currentModel.url = model_url;
-                    console.info("Loaded: " + model_url + ":" + shape_size);
-                }
-                console.info("The NSFW Model was loaded successfully!");
-            } catch (err) {
-                console.error(err);
+        try {
+            //model_url, { size: parseInt(shape_size) }
+            if (!model_url || !shape_size) v3_NSFWModel = await nsfw.load();
+            else {
+                v3_NSFWModel = {};
+                v3_NSFWModel = await nsfw.load(model_url, {size: parseInt(shape_size)});
+                currentModel.size = shape_size;
+                currentModel.url = model_url;
+                //Cannot log after tests are done
+                if (process.env.NODE_ENV !== "test") console.info("Loaded: " + model_url + ":" + shape_size);
             }
+            //Cannot log after tests are done
+            if (process.env.NODE_ENV !== "test") console.info("The NSFW Model was loaded successfully!");
+        } catch (err) {
+            console.error(err);
         }
+        initResolve.forEach(resolve => resolve());
     },
-    setCaching(hashingFunc) {
-        //check for get and set method
-        if (typeof hashingFunc.get === "function" && typeof hashingFunc.set === "function") {
-            hashCache = hashingFunc;
-        }
-    },
-    hashData: hashData,
+
     saveImage: async function (data, hash) {//return hash
         if (!process.env.CACHE_IMAGE_HASH_FILE) {
             return false;
@@ -259,20 +303,29 @@ module.exports = {
 
     //must not throw error
     //so anyway I start throwing error
-    digest: async function (data, hex = undefined) {
+    digest: async function (data, url = undefined) {
+        let hexed = {
+            binaryHash: undefined,
+            stringHash: undefined
+        }
         if (hashCache) {
-            hex = this.hashData(hex || data);
-            const cached = await hashCache.get(hex);
+            hexed.binaryHash = this.hashData(data);
+            hexed.stringHash = this.hashData(url);
+            if (!hexed.stringHash) {
+                hexed.stringHash = hexed.binaryHash;
+            }
+            let cached = await hashCache.get(hexed.stringHash);
+            if (cached) {
+                return cached;
+            }
+            cached = await hashCache.get(hexed.binaryHash);
             if (cached) {
                 return cached;
             }
         }
         if (err) return {error: err.toString(), status: 500}
-        if (!hex) {
-            hex = this.hashData(data);
-        }
-        this.saveImage(data, hex).then(r => {
-            if(r) console.log("Saved image: " + hex);
+        this.saveImage(data, hexed.binaryHash).then(r => {
+            if (r) console.log("Saved image: " + hexed.binaryHash);
         });
         // Image must be in tf.tensor3d format
         // you can convert image to tf.tensor3d with tf.node.decodeImage(Uint8Array,channels)
@@ -298,7 +351,7 @@ module.exports = {
 
         if (gif) {
             if (!supportGIF) return {error: "GIF support is not enabled", status: 415}
-            reportPrediction.data = await nsfwModel.classifyGif(data);
+            reportPrediction.data = await v3_NSFWModel.classifyGif(data);
         } else {
             image = await tf.node.decodeImage(data, 3);
             reportPrediction.data = await classify(image);
@@ -308,7 +361,7 @@ module.exports = {
         image.dispose(); // Tensor memory must be managed explicitly (it is not sufficient to let a tf.Tensor go out of scope for its memory to be released).
         reportPrediction.model = currentModel;
         reportPrediction.timestamp = new Date().getTime();
-        reportPrediction.hex = hex;
+        reportPrediction.hex = url ? hexed.stringHash : hexed.binaryHash;
         reportPrediction.time = Date.now() - startTime;
         if (process.env.TEST_MODE) {
             reportPrediction.cache = "miss";
@@ -316,7 +369,10 @@ module.exports = {
         }
         //set cache
         if (hashCache) {
-            hashCache.set(hex, reportPrediction);
+            await hashCache.set(hexed.binaryHash, reportPrediction);
+            if (hexed.stringHash !== hexed.binaryHash) {
+                await hashCache.set(hexed.stringHash, reportPrediction);
+            }
         }
         averageTimeToProcess = (averageTimeToProcess + reportPrediction.time) / 2;
         return reportPrediction;
@@ -340,10 +396,8 @@ module.exports = {
             }
             try {
                 const host = new URL(url).hostname;
-                const allowedHost = hostsFilter().allowedHost;
-                const blockedHost = hostsFilter().blockedHost;
-                const allowedAll = hostsFilter().allowedAll;
-                if (!blockedHost.includes(host) && (allowedAll || allowedHost.includes(host))) {
+
+                if (hostAllowed(host)) {
                     pic = await axios.get(url, {
                         responseType: "arraybuffer",
                         maxContentLength: 15e7,
@@ -363,18 +417,21 @@ module.exports = {
                             url = new URL(url).origin + pic.headers.location;
                         }
                         redirectCounter++;
-                        continue;
+
                     } else {
                         break;
                     }
                 } else {
-                    return {error: "Host is blocked", status: 403}
+                    throw {
+                        message: "Host not allowed: " + host,
+                        status: 403
+                    };
                 }
             } catch (err) {
-                result.error = "Download Image Error for \"" + url + "\": " + err.toString();
-                console.error(result.error);
-                result.status = err.response ? err.response.status : 500;
-                return result;
+                result.message = "Download Image Error for \"" + url + "\": " + (err ? (err.message ? err.message + " " + err.status : err) : "Unknown Error");//most readable code in here
+                console.error(result.message);
+                result.status = err.response ? err.response.status : (err.status || 500);
+                throw result;
             }
         }
 
@@ -384,11 +441,12 @@ module.exports = {
             console.error("Prediction Error: ", err);
             result.error = err.toString();
             result.status = 500;
+            throw result;
         }
 
         return result;
     },
     available: function () {
-        return nsfwModel !== undefined;
+        return v3_NSFWModel !== undefined;
     }
 };
