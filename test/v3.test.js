@@ -46,6 +46,7 @@ describe("v3 Static API Test", () => {
 describe("v3 Classification API Test", () => {
     for (const url of testImageUrls) {
         test("GET /api/v3/classification/" + url, async () => {
+
             return await request.get("/api/v3/classification/" + encodeURIComponent(url))
                 .expect(200)
                 .expect('Content-Type', /json/)
@@ -71,6 +72,6 @@ describe("v3 Classification API Test", () => {
 afterAll(async () => {
     await cache.clear();
     await cache.close();
-    await new Promise(resolve => setTimeout(() => resolve(), 500)); // avoid jest open handle error
+    await new Promise(resolve => setTimeout(() => resolve(), 5000)); // avoid jest open handle error
 
 });
