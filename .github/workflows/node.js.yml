@@ -48,7 +48,7 @@ jobs:
         # < 12.0.0 is not supported because jest and syntax
         # > 16.0.0 is not supported because of tfjs obscure error
         #send help
-        node-version: [ 14.x ]
+        node-version: [ 16.x ]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
