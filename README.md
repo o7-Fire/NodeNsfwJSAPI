@@ -1,4 +1,4 @@
-# NSFW API Detection with NodeJS
+## Blazing Fast 🚀 NSFW API Detection with NodeJS
 ![](https://img.shields.io/librariesio/github/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/workflow/status/o7-Fire/NodeNsfwJSAPI/Node.js%20CI?event=push&style=flat-square)
 ![](https://img.shields.io/github/v/release/o7-Fire/NodeNsfwJSAPI?style=flat-square)
@@ -11,25 +11,37 @@
 ![](https://img.shields.io/github/languages/code-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/languages/top/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 
+## Not 100% perfect
+
+<table align="center">
+  <tbody>
+    <tr>
+      <td align="center">
+          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" width="500" height="200"/>
+        </td>
+      <td align="center">
+          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png" width="500" height="200"/>
+      </td>
+      <td align="center">
+          <img src="https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png" width="500" height="200"/>
+      </td>
+      <td align="center">
+          <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" width="500" height="200"/>
+      </td>
+      <td align="center">
+          <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" width="500" height="200"/>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br />
+
+
 ## Quickstart
 
 https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
 
-## Preview
-
-- Not 100% perfect
-- ![Discord Bot](https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png)
-- ![Yes](https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png)
-- Mindustry Integration
-- ![image](https://user-images.githubusercontent.com/49940811/206965088-ecde528e-a874-4444-af4a-613daff23d36.png)
-
-- ![Swagger Documentation](https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png)
-- ![Response and Request](https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png)
-- after processing and some cache (pi 4 B)
-- ![](https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png)
-
-# Stuff
-## Tensorflow
+## Installing Tensorflow.js and Requirements
 
 TensorFlow.js for Node currently supports the following platforms:
 
