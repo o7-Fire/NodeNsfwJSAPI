@@ -11,7 +11,7 @@
 ![](https://img.shields.io/github/languages/code-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/languages/top/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ## Proof of Concept & API
-<details open>
+<details>
   <summary>Proof of Concept & API</summary>
   <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" name="1">
   <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" name="2">
