@@ -10,32 +10,16 @@
 ![](https://img.shields.io/github/repo-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/languages/code-size/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/languages/top/o7-Fire/NodeNsfwJSAPI?style=flat-square)
-
-## Not 100% perfect
-
- 
-<table align="center">
-  <tbody>
-    <tr>
-      <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" />
-        </td>
-      <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png" />
-      </td>
-      <td align="center">
-          <img src="https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png" />
-      </td>
-      <td align="center">
-          <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" />
-      </td>
-      <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" />
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br />
+## Proof of Concept & API
+<details open>
+  <summary>Proof of Concept & API</summary>
+  <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" name="1">
+  <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" name="2">
+  <img src="https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png" name="3">
+  <img src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png" name="4">
+  <img src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" name="5">
+  <img src="https://user-images.githubusercontent.com/49940811/206965088-ecde528e-a874-4444-af4a-613daff23d36.png" name="6">
+</details>
 
 ## Installing Tensorflow.js and Requirements
 
