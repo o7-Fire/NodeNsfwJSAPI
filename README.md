@@ -13,37 +13,35 @@
 
 ## Not 100% perfect
 
+ 
 <table align="center">
   <tbody>
     <tr>
       <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" width="500" height="200"/>
+          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872865181213032518/unknown.png" />
         </td>
       <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png" width="500" height="200"/>
+          <img src="https://cdn.discordapp.com/attachments/840041811384860708/872867517125771355/unknown.png" />
       </td>
       <td align="center">
-          <img src="https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png" width="500" height="200"/>
+          <img src="https://user-images.githubusercontent.com/49940811/204942756-bd220b3b-0c84-4433-8d55-6c8dbeec2dea.png" />
       </td>
       <td align="center">
-          <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" width="500" height="200"/>
+          <img src="https://user-images.githubusercontent.com/49940811/204943613-580e107f-9ca4-4435-b7b7-44309ab55161.png" />
       </td>
       <td align="center">
-          <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" width="500" height="200"/>
+          <img src="https://cdn.discordapp.com/attachments/997385080047673415/1000561451938881566/unknown.png" />
       </td>
     </tr>
   </tbody>
 </table>
 <br />
 
-
-## Quickstart
-
-https://github.com/o7-Fire/NodeNsfwJSAPI/wiki#quickstart
-
 ## Installing Tensorflow.js and Requirements
 
 TensorFlow.js for Node currently supports the following platforms:
+
+The platforms listed include Mac OS X, Linux, and Windows operating systems, and support is provided for both CPU and GPU environments. Developers who want to use TensorFlow.js for Node on these platforms will need to ensure that their system meets the specified requirements.
 
 - Mac OS X CPU (10.12.6 Siera or higher)
 - Linux CPU (Ubuntu 14.04 or higher)
@@ -53,7 +51,7 @@ TensorFlow.js for Node currently supports the following platforms:
 - Windows GPU (Windows 7 or higher and Cuda 11.2 w/ CUDNN
   v8) ([see installation instructions](https://www.tensorflow.org/install/gpu#windows_setup))
 
-For GPU support, tfjs-node-gpu@1.2.4 or later requires the following NVIDIA® software installed on your system:
+For GPU support, tfjs-node-gpu@1.2.4 or later requires the developers to have certain versions of NVIDIA software installed on their system. The specific software requirements are listed in the table below.
 
 | Name | Version |
 |---|---|
