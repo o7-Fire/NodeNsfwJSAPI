@@ -1,4 +1,4 @@
-## Blazing Fast 🚀 NSFW API Detection with NodeJS
+## Blazing Fast 🚀 NSFW API with NodeJS & ExpressJS
 ![](https://img.shields.io/librariesio/github/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 ![](https://img.shields.io/github/workflow/status/o7-Fire/NodeNsfwJSAPI/Node.js%20CI?event=push&style=flat-square)
 ![](https://img.shields.io/github/v/release/o7-Fire/NodeNsfwJSAPI?style=flat-square)
@@ -21,7 +21,8 @@
   <img src="https://user-images.githubusercontent.com/49940811/206965088-ecde528e-a874-4444-af4a-613daff23d36.png" name="6">
 </details>
 
-## Installing Tensorflow.js and Requirements
+
+## Installing Tensorflow.js and Requirements (Random Stuff I Found on Internet)
 
 TensorFlow.js for Node currently supports the following platforms:
 
