@@ -37,23 +37,6 @@ app.head("/", (request, response) => {
     response.status(200);
 });
 
-app.use(function (req, res, next) {
-    if (!process.env.NODE_NSFW_KEY) {
-        next();
-    } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
-        //console.log("No auth");
-        return res.status(401).json({
-            error: "No Authorization Provided"
-        });
-    } else if (req.headers.authorization !== process.env.NODE_NSFW_KEY) {
-        //console.log("invalid auth");
-        return res.status(401).json({
-            error: "Invalid Authorization"
-        });
-    } else {
-        next();
-    }
-});
 
 app.use(helmet());
 app.use(compression());
@@ -108,12 +91,6 @@ app.use(
 app.use(cookieParser());
 /* End Cookie Settings */
 
-/* Start of Routing Modules */
-const v3_router = require("./routes/v3_route");
-v3_router(app);
-
-/* End of Routing Modules */
-
 
 const apiVersion = process.env.API_VERSION || "v3";
 const testURL = "/api/" + apiVersion + "/health";
@@ -128,6 +105,32 @@ let docs = require(docsFolder + 'docs.json');
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(docs, {
     explorer: true,
 }));
+/* Begin Authorization */
+app.use(function (req, res, next) {
+    if (!process.env.NODE_NSFW_KEY) {
+        next();
+    } else if (!req.headers.authorization && !!process.env.NODE_NSFW_KEY) {
+        //console.log("No auth");
+        return res.status(401).json({
+            error: "No Authorization Provided"
+        });
+    } else if (req.headers.authorization !== process.env.NODE_NSFW_KEY) {
+        //console.log("invalid auth");
+        return res.status(401).json({
+            error: "Invalid Authorization"
+        });
+    } else {
+        next();
+    }
+});
+/* End Authorization */
+/* Start of Routing Modules */
+const v3_router = require("./routes/v3_route");
+v3_router(app);
+
+/* End of Routing Modules */
+
+
 app.get("*", function (req, res) {
     res.status(404);
 

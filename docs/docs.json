@@ -17,6 +17,11 @@
     "/api/v3/health": {
       "get": {
         "summary": "Health Check",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Check if the API is up and running",
         "responses": {
           "200": {
@@ -41,6 +46,11 @@
     "/api/v3/meta/categories": {
       "get": {
         "summary": "Get Categories",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Get all categories, n1 is negative 1",
         "responses": {
           "200": {
@@ -62,6 +72,11 @@
     "/api/v3/meta/hosts": {
       "get": {
         "summary": "Get Hosts List",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Get all blocked and allowed hosts",
         "responses": {
           "200": {
@@ -83,6 +98,11 @@
     "/api/v3/meta/hosts/{host}": {
       "get": {
         "summary": "Check Host",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Check if a host is blocked or allowed",
         "parameters": [
           {
@@ -115,6 +135,11 @@
     "/api/v3/classification/{url}": {
       "get": {
         "summary": "Classify URL",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Classify an image from a URL",
         "parameters": [
           {
@@ -153,6 +178,11 @@
     "/api/v3/classification": {
       "post": {
         "summary": "Classify Images",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Classify images with uploaded files",
         "requestBody": {
           "content": {
@@ -195,6 +225,11 @@
     "/api/v3/hash/{hash}": {
       "get": {
         "summary": "Get Hash Data",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Check if a hash is in the database",
         "parameters": [
           {
@@ -233,6 +268,11 @@
     "/api/v3/hash": {
       "post": {
         "summary": "Get Hash Data",
+        "security": [
+          {
+            "authorization": []
+          }
+        ],
         "description": "Get hashes from uploaded files, won't classify images",
         "requestBody": {
           "content": {
@@ -765,6 +805,13 @@
             }
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "authorization": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
       }
     }
   }
