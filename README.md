@@ -1,6 +1,6 @@
 ## Blazing Fast 🚀 NSFW API with NodeJS & ExpressJS
 ![](https://img.shields.io/librariesio/github/o7-Fire/NodeNsfwJSAPI?style=flat-square)
-![](https://img.shields.io/github/workflow/status/o7-Fire/NodeNsfwJSAPI/Node.js%20CI?event=push&style=flat-square)
+![](https://img.shields.io/github/actions/workflow/status/o7-Fire/NodeNsfwJSAPI/node.js.yml?style=flat-square)
 ![](https://img.shields.io/github/v/release/o7-Fire/NodeNsfwJSAPI?style=flat-square)
 
 ![](https://img.shields.io/github/license/o7-Fire/NodeNsfwJSAPI?style=flat-square)
