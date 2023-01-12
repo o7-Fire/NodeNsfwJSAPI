@@ -22,7 +22,7 @@
 </details>
 
 ## Implementation
-- https://github.com/o7-Fire/mindustry-guacamole - v3
+- https://github.com/o7-Fire/mindustry-guacamole - Java - v3
 
 ## Installing Tensorflow.js and Requirements (Random Stuff I Found on Internet)
 

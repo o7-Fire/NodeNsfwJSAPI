@@ -5,14 +5,6 @@
     "description": "Highly Scalable Industry Standard NSFW Classification API for images with Node.js",
     "version": "1.0.1"
   },
-  "servers": [
-    {
-      "url": "http://localhost:5656/"
-    },
-    {
-      "url": "https://api.mindustry.me/"
-    }
-  ],
   "paths": {
     "/api/v3/health": {
       "get": {
