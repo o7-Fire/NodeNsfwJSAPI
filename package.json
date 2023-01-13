@@ -35,8 +35,10 @@
   "license": "MIT",
   "keywords": [
     "node",
-    "glitch",
-    "express"
+    "express",
+    "api",
+    "nsfw",
+    "tensorflow"
   ],
   "devDependencies": {
     "jest": "^29.3.1",

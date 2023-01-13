@@ -5,11 +5,11 @@
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 
 const startTime = Date.now();
-
+process.env.NODE_ENV = process.env.NODE_ENV || "production";
 require("dotenv").config({
     path: __dirname + "/.env" + (process.env.NODE_ENV ? "." + process.env.NODE_ENV : "")
 });
-process.env.TEST_MODE = (process.env.NODE_ENV === "test") + "";
+process.env.TEST_MODE = (process.env.NODE_ENV === "test");
 console.info("Starting server in " + process.env.NODE_ENV + " mode");
 
 const express = require("express");
