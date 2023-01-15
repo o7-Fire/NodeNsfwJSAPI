@@ -2,8 +2,10 @@ const {decodeImage} = require("@tensorflow/tfjs-node/dist/image");
 let NSFW_MODEL_URL = process.env.NSFW_MODEL_URL || "https://d1zv2aa70wpiur.cloudfront.net/tfjs_quant_nsfw_mobilenet/";
 let NSFW_MODEL_SHAPE_SIZE = process.env.NSFW_MODEL_SHAPE_SIZE || 224;
 const tf = require("@tensorflow/tfjs-node");
-console.log("Please ignore that message");
-const {NSFW_CLASSES} = require('./nsfw_classes')
+const {NSFW_CLASSES, NSFW_CLASSES_EXTENDED, interpolateClasses, standardizeData} = require('./nsfw_classes')
+const ModelUtils = require("./models_utils");
+
+tf.enableProdMode();
 const mobilenet = {
     model: undefined,
     endpoints: [],
@@ -23,7 +25,7 @@ async function load() {
         //wait
         await new Promise(resolve => setTimeout(resolve, 100));
     }
-    if (mobilenet.model != null) {
+    if (!!mobilenet.model) {
         return mobilenet;
     }
     mobilenet.loading = true;
@@ -58,6 +60,7 @@ function infer(img, endpoint) {
             `${mobilenet.endpoints}.`
         );
     }
+
 
     return tf.tidy(() => {
         if (!(img instanceof tf.Tensor)) {
@@ -116,6 +119,12 @@ function infer(img, endpoint) {
 }
 
 async function classify(img, topk = 5) {
+    if (mobilenet.model == null) {
+        await load();
+    }
+    if (typeof img === 'string' || img instanceof String) {
+        img = await ModelUtils.decodeImage(img);
+    }
     const logits = infer(img);
 
     const classes = await getTopKClasses(logits, topk);
@@ -125,82 +134,58 @@ async function classify(img, topk = 5) {
     return classes;
 }
 
-async function classifyGif(gif, config = {topk: 5}) {
-    let frameData = [];
+//return 2d array of predictions
+//[ {"label": 0.5, "label2": 0.3}, {"label": 0.5, "label2": 0.3} ]
+//the first array is the frame, the second is the label
 
-    if (Buffer.isBuffer(gif)) {
-        frameData = await gifFrames({url: gif, frames: 'all', outputType: 'jpg'});
-    } else {
-        frameData = await gifFrames({url: gif.src, frames: 'all', outputType: 'canvas'});
-    }
-
-    let acceptedFrames = [];
-    if (typeof config.fps !== 'number') {
-        acceptedFrames = frameData.map((_element, index) => index);
-    } else {
-        let totalTimeInMs = 0;
-        for (let i = 0; i < frameData.length; i++) {
-            totalTimeInMs = totalTimeInMs + (frameData[i].frameInfo.delay * 10);
-        }
-
-        const totalFrames = Math.floor(totalTimeInMs / 1000 * config.fps);
-        if (totalFrames <= 1) {
-            acceptedFrames = [Math.floor(frameData.length / 2)];
-        } else if (totalFrames >= frameData.length) {
-            acceptedFrames = frameData.map((_element, index) => index);
-        } else {
-            const interval = Math.floor(frameData.length / (totalFrames + 1));
-            for (let i = 1; i <= totalFrames; i++) {
-                acceptedFrames.push(i * interval);
-            }
-        }
-    }
-
-    const arrayOfPredictions = []
-    for (let i = 0; i < acceptedFrames.length; i++) {
-        const image = frameData[acceptedFrames[i]].getImage()
-        const predictions = await classify(image, config.topk);
-
-        if (typeof config.onFrame === 'function') {
-            config.onFrame({
-                index: acceptedFrames[i],
-                totalFrames: frameData.length,
-                predictions,
-                image
+/**
+ * I think this is more consistent
+ * [
+ *   {
+ *     "result": 0.99506014585495,
+ *     "label": "Neutral"
+ *   },
+ *   {
+ *     "result": 0.004820775706321001,
+ *     "label": "Drawing"
+ *   },
+ *   {
+ *     "result": 0.00010097925405716524,
+ *     "label": "Hentai"
+ *   },
+ *   {
+ *     "result": 0.000016720894564059563,
+ *     "label": "Porn"
+ *   },
+ *   {
+ *     "result": 0.000001418997953805956,
+ *     "label": "Sexy"
+ *   }
+ * ]
+ * @param logits
+ * @param topK
+ * @returns {Promise<*>}
+ */
+async function getTopKClasses(logits, topK) {
+    const values = await logits.array();
+    const labeled = values.map((results, i) => {
+        const valuesAndLabels = [];
+        for (let j = 0; j < results.length; j++) {
+            valuesAndLabels.push({
+                value: results[j],
+                label: NSFW_CLASSES[j],
             });
         }
-
-        arrayOfPredictions.push(predictions);
-    }
-
-    return arrayOfPredictions;
-}
-
-async function getTopKClasses(logits, topK) {
-    const values = await logits.data();
-
-    const valuesAndIndices = [];
-    for (let i = 0; i < values.length; i++) {
-        valuesAndIndices.push({value: values[i], index: i});
-    }
-    valuesAndIndices.sort((a, b) => {
-        return b.value - a.value;
-    });
-    const topkValues = new Float32Array(topK);
-    const topkIndices = new Int32Array(topK);
-    for (let i = 0; i < topK; i++) {
-        topkValues[i] = valuesAndIndices[i].value;
-        topkIndices[i] = valuesAndIndices[i].index;
-    }
-
-    const topClassesAndProbs = [];
-    for (let i = 0; i < topkIndices.length; i++) {
-        topClassesAndProbs.push({
-            className: NSFW_CLASSES[topkIndices[i]],
-            probability: topkValues[i],
+        valuesAndLabels.sort((a, b) => {
+            return b.value - a.value;
         });
-    }
-    return topClassesAndProbs;
+        valuesAndLabels.push(interpolateClasses(valuesAndLabels[0], valuesAndLabels[1]));
+        valuesAndLabels.sort((a, b) => {
+            return b.value - a.value;
+        });
+        return valuesAndLabels.slice(0, topK);
+    });
+    return standardizeData(labeled);
 }
 
 module.exports = {

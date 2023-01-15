@@ -5,12 +5,13 @@
 // but feel free to use whatever libraries or frameworks you'd like through `package.json`.
 
 const startTime = Date.now();
-process.env.NODE_ENV = process.env.NODE_ENV || "production";
 require("dotenv").config({
     path: __dirname + "/.env" + (process.env.NODE_ENV ? "." + process.env.NODE_ENV : "")
 });
 process.env.TEST_MODE = (process.env.NODE_ENV === "test");
-console.info("Starting server in " + process.env.NODE_ENV + " mode");
+if (process.env.NODE_ENV) {
+    console.info("Starting server in " + process.env.NODE_ENV + " mode");
+}
 
 const express = require("express");
 const swaggerUi = require('swagger-ui-express');
@@ -24,13 +25,6 @@ const fs = require('fs');
 
 const app = express();
 const cache = require('./config/cache');
-const nsfwModel = require("./models/v3_NSFWModel");
-
-nsfwModel.init().then(() => {
-    //Cannot log after tests are done
-    if (process.env.NODE_ENV !== "test") console.log("Model loaded in", Date.now() - startTime, "ms");
-});
-
 
 //what is this
 app.head("/", (request, response) => {

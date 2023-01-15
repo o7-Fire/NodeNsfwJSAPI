@@ -1,9 +1,10 @@
 const cache = require('../config/cache');
-const NSFWModel = require('../models/v3_NSFWModel');
+const NSFWModel = require('../models/v3_nsfw_mobilenet');
+const ModelUtils = require('../models/models_utils');
 
 exports.health = async function (req, res) {
     try {
-        const data = await NSFWModel.classify(NSFWModel.TEST_URL);
+        const data = await NSFWModel.classify(ModelUtils.TEST_URL);
         res.status(200).json({
             status: "SUCCESS",
             error_code: "",
@@ -22,7 +23,7 @@ exports.health = async function (req, res) {
 
 exports.getCategories = async function (req, res) {
     try {
-        const data = NSFWModel.categories;
+        const data = ModelUtils.categories;
         res.status(200).json({
             status: "SUCCESS",
             error_code: "",
@@ -40,7 +41,7 @@ exports.getCategories = async function (req, res) {
 
 exports.getHosts = async function (req, res) {
     try {
-        const data = NSFWModel.hostsFilter();
+        const data = ModelUtils.hosts;
         res.status(200).json({
             status: "SUCCESS",
             error_code: "",
@@ -59,7 +60,7 @@ exports.getHosts = async function (req, res) {
 exports.checkHost = async function (req, res) {
     try {
         const host = req.params.host;
-        const data = NSFWModel.hostAllowed(host);
+        const data = ModelUtils.hostAllowed(host);
         res.status(200).json({
             status: "SUCCESS",
             error_code: "",
@@ -104,7 +105,7 @@ exports.classifyUpload = async function (req, res) {
         const datas = [];
         for (let i = 0; i < files.length; i++) {
             const blob = files[i].buffer;
-            const data = await NSFWModel.digest(blob);
+            const data = await NSFWModel.classify(blob);
             datas.push(data);
         }
 
@@ -132,7 +133,7 @@ exports.classifyUpload = async function (req, res) {
 exports.hashUrl = async function (req, res) {
     try {
         const url = req.params.hex;
-        const hash = NSFWModel.hashData(url);
+        const hash = ModelUtils.hashData(url);
         const data = {
             url: url,
             hash: hash,
@@ -171,7 +172,7 @@ exports.hashUpload = async function (req, res) {
         let atLeastOneCacheIsHit = false;
         for (let i = 0; i < files.length; i++) {
             const blob = files[i].buffer;
-            const hash = NSFWModel.hashData(blob);
+            const hash = ModelUtils.hashData(blob);
             const data = {
                 url: files[i].originalname,
                 hash: hash,

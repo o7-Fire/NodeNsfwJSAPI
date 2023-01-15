@@ -1,5 +1,26 @@
+// TODO rename it to something else
+async function decodeImage(img) {
+    //check if base64
+    if (img.startsWith("data:image/")) {
+        //decode base64
+        img = Buffer.from(img.split(",")[1], 'base64');
+    } else if (img.endsWith("==")) {
+        //decode base64
+        img = Buffer.from(img, 'base64');
+    } else if (img.startsWith("http")) {
+        //download image
+        img = await downloadImage(img);
+    } else {
+        //decode base64
+        img = Buffer.from(img, 'base64');
+    }
+    return img;
+}
+
 const axios = require('axios');
 const TEST_URL = process.env.TEST_URL || "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/SIPI_Jelly_Beans_4.1.07.tiff/lossy-page1-256px-SIPI_Jelly_Beans_4.1.07.tiff.jpg";
+const NSFWClasses = require("./nsfw_classes");
+const crypto = require("crypto");
 
 function getImageType(content) {
     // Classify the contents of a file based on starting bytes (aka magic number:
@@ -48,6 +69,10 @@ function hostsFilter() {
     }
 }
 
+function pretty(classificationResult) {
+
+}
+
 function hostAllowed(host) {
     const filter = hostsFilter();
     if (filter.blockedHost.includes(host)) {
@@ -70,7 +95,7 @@ async function downloadImage(url) {
         try {
             const host = new URL(url).hostname;
 
-            if (this.hostAllowed(host)) {
+            if (hostAllowed(host)) {
                 pic = await axios.get(url, {
                     responseType: "arraybuffer",
                     maxContentLength: 15e7,
@@ -110,4 +135,35 @@ async function downloadImage(url) {
     return pic.data;
 }
 
-module.exports = {getImageType, hostAllowed, downloadImage, hosts: hostsFilter(), TEST_URL};
+function hashData(data) {
+    if (!data) return data;
+    //if binary or buffer return hash
+    if (Buffer.isBuffer(data) || typeof data === "Uint8Array") {
+        //if binary return hash
+        return crypto.createHash('sha256').update(data).digest('hex');
+    }
+    //check if hex
+    if (data.length === 64 && data.match(/^[0-9a-fA-F]+$/)) {
+        return data;
+    }
+    //return string, prevent path traversal
+    data = (data + "").replace(/[^a-zA-Z0-9]/g, '.');
+    //replace multiple dots with one
+    data = data.replace(/\.+/g, '.');
+    //remove leading and trailing dots
+    data = data.replace(/^\.+|\.+$/g, '');
+    //digest to hex
+    return crypto.createHash('sha256').update(data).digest('hex');
+}
+
+module.exports = {
+    decodeImage,
+    hashData,
+    getImageType,
+    hostAllowed,
+    downloadImage,
+    hosts: hostsFilter(),
+    TEST_URL,
+    categories: NSFWClasses.NSFW_CLASSES_EXTENDED,
+    NSFW_CLASSES: NSFWClasses.NSFW_CLASSES
+};

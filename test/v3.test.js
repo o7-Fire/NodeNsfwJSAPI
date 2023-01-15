@@ -3,10 +3,8 @@
 const supertest = require("supertest");
 const {app} = require('../app.js');
 const request = supertest(app);
-const {testImageUrls} = require('./vars.js');
-const NSFWModel = require('../models/v3_NSFWModel');
+const {testImageUrls, TEST_URL} = require('./vars.js');
 const cache = require('../config/cache');
-const model = require('../models/v3_NSFWModel');
 /**
  *     app.get('/api/v3/health', healthAuth, v3Controller.health);
  *     app.get('/api/v3/meta/categories', v3Controller.getCategories);
@@ -19,10 +17,6 @@ const model = require('../models/v3_NSFWModel');
  */
 
 jest.setTimeout(30000);
-beforeAll(async () => {
-    //await cache.connect();
-    await model.init();
-});
 
 describe("v3 Static API Test", () => {
     test("GET /api/v3/health", async () => {
@@ -35,7 +29,7 @@ describe("v3 Static API Test", () => {
         return request.get("/api/v3/meta/hosts").expect(200);
     });
     //get testUrl host
-    const host = new URL(NSFWModel.TEST_URL).host;
+    const host = new URL(TEST_URL).host;
     test("GET /api/v3/meta/hosts/:host", async () => {
         return request.get("/api/v3/meta/hosts/" + host).expect(200).expect((res) => {
             expect(res.body.data.allowed).toBe(true);
@@ -56,7 +50,7 @@ describe("v3 Classification API Test", () => {
     }
     test("GET /api/v3/classification Cache Test", async () => {
         for (let i = 0; i < 10; i++) {
-            await request.get("/api/v3/classification/" + encodeURIComponent(NSFWModel.TEST_URL))
+            await request.get("/api/v3/classification/" + encodeURIComponent(TEST_URL))
                 .expect(200)
                 .expect('Content-Type', /json/)
                 .expect((res) => {

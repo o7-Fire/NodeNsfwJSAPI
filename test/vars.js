@@ -9,5 +9,6 @@ module.exports = {
         "https://picsum.photos/224",
         "https://upload.wikimedia.org/wikipedia/commons/3/3e/Exploding_Wikipedia-logo.gif",
         Utils.TEST_URL
-    ]
+    ],
+    TEST_URL: Utils.TEST_URL,
 }
