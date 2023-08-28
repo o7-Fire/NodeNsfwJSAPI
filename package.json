@@ -39,7 +39,7 @@
     "express"
   ],
   "devDependencies": {
-    "jest": "^29.6.3",
+    "jest": "^29.6.4",
     "superagent": "^8.1.2",
     "supertest": "^6.3.3"
   }
