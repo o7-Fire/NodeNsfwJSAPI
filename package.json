@@ -12,7 +12,7 @@
   "dependencies": {
     "@tensorflow/tfjs-node": "^4.15.0",
     "ansi-regex": ">=6.0.1",
-    "axios": "^1.6.3",
+    "axios": "^1.6.5",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
