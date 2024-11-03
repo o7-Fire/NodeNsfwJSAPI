@@ -81,4 +81,4 @@ Adopted from:
 - https://github.com/infinitered/nsfwjs
 
 Preview:
-https://api.mindustry.me
+https://classify.mindustry.shop
